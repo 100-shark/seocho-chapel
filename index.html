@@ -1564,7 +1564,7 @@ function rebuildMyAvatar(){
 }
 function presenceBase(){ var h = new Date().getHours(); if (h < 6) return 4; if (h < 9) return 11; if (h < 12) return 8; if (h < 14) return 16; if (h < 18) return 9; if (h < 22) return 21; return 7; }
 var presence = presenceBase() + Math.floor(Math.random()*4);
-function syncAvatars(){ if (typeof RT !== 'undefined' && RT && RT.on) presence = Math.min(presence, 3); var want = Math.max(1, presence - 1); while (seatedCount() < want && seatedCount() < 24) { if (!addAvatar()) break; } while (seatedCount() > want) { if (!removeAvatar()) break; } if (!(typeof RT !== 'undefined' && RT && RT.on)) $('#presence-n').textContent = presence + '명이 함께 있어요'; }
+function syncAvatars(){ var live = typeof rtLive === 'function' && rtLive(); if (live) presence = Math.min(presence, 3); var want = Math.max(1, presence - 1); while (seatedCount() < want && seatedCount() < 24) { if (!addAvatar()) break; } while (seatedCount() > want) { if (!removeAvatar()) break; } if (!live) $('#presence-n').textContent = presence + '명이 함께 있어요'; }
 
 // ----- my state: position, seat, walking, view
 var view = store('chapel-view') || 'third';
@@ -2743,7 +2743,7 @@ function rtInit(){
     RT.id = rtId();
     RT.sb = window.supabase.createClient(ROOM.supabaseUrl, ROOM.supabaseKey, { realtime: { params: { eventsPerSecond: 4 } } });
     var ch = RT.sb.channel('chapel-' + ROOM.id, { config: { presence: { key: RT.id }, broadcast: { self: false } } });
-    ch.on('presence', { event: 'sync' }, function(){ rtSync(ch.presenceState()); });
+    ch.on('presence', { event: 'sync' }, function(){ rtMerge(); });
     ch.on('broadcast', { event: 'emote' }, function(m){ rtEmote(m.payload || {}); });
     ch.subscribe(function(status){
       if (status === 'SUBSCRIBED') { RT.on = true; RT.err = null; RT.lastKey = ''; rtTrack(true); rtStatus(); }
@@ -2814,6 +2814,7 @@ function rtCount(){ return Object.keys(RT.peers).length + 1; }
 function rtStatus(){
   var el = $('#presence-n'), sm = $('#presence small');
   if (RT.on) { var hid = rtHidden(); el.textContent = rtCount() + '명이 함께 있어요'; if (sm) sm.textContent = hid ? '실시간 · 가까운 ' + (rtCount() - 1 - hid) + '명만 보임' : '실시간'; $('#presence').title = '지금 이 경당에 들어와 있는 사람'; }
+  else if (SHARED && RTR.on) { el.textContent = rtCount() + '명이 함께 있어요'; if (sm) sm.textContent = '보조 연결'; $('#presence').title = '실시간 연결이 막힌 네트워크라 5초마다 갱신하는 보조 연결로 함께 있습니다. 남의 움직임이 조금 늦게 보입니다.'; }
   else if (SHARED) { el.textContent = presence + '명이 함께 있어요'; if (sm) sm.textContent = RT.err ? '연결 끊김' : '연결 중'; $('#presence').title = RT.err ? '함께 있기 연결이 끊겼습니다(접속이 많거나 네트워크 문제). 경당은 그대로 쓸 수 있고, 잠시 뒤 다시 이어집니다.' : '함께 있기에 연결하는 중'; }
 }
 function rtNames(){ return Object.keys(RT.peers).map(function(k){ return RT.peers[k].name; }); }
@@ -2850,6 +2851,31 @@ function rtEmote(p){
   else if (p.k === 'organ' && typeof organNote === 'function' && typeof p.f === 'number') { initAudio(); organNote(p.f, 0.2, 0.9, true); if (Date.now() - RT.organToast > 20000) { RT.organToast = Date.now(); toast(who + '님이 오르간을 연주합니다.', 2400); } }
   else if (p.k === 'hymn' && typeof organPlay === 'function' && HYMNS[p.h]) { if (!organ.on) { initAudio(); organPlay(p.h, true); toast(who + '님이 「' + HYMNS[p.h].name + '」을 연주합니다.', 3000); } }
 }
+// ---------- 함께 있기 보조 연결: 실시간(웹소켓)이 막힌 네트워크(회사 Wi-Fi·일부 앱 안 브라우저)에서는 presence 표에 5초마다 내 위치를 적고 남의 위치를 읽습니다 ----------
+// 웹소켓이 되는 사람도 표에 적어 두어(바뀔 때 5초, 그대로면 25초마다) 보조 연결인 사람에게 보입니다. 두 경로가 겹치면 웹소켓 쪽을 씁니다.
+var RTR = { on: false, rows: {}, lastSent: 0, lastKey: '', ok: false };
+function rtLive(){ return !!((typeof RT !== 'undefined' && RT && RT.on) || (typeof RTR !== 'undefined' && RTR && RTR.on)); } // 시작 직후(RT·RTR 할당 전)에도 불립니다
+function rtRestWrite(force){
+  if (!SHARED || !entered) return; if (!RT.id) RT.id = rtId();
+  var q = rtPayload(), p = { id: q.id, name: q.n, x: q.x, z: q.z, f: q.f, p: q.p, s: q.s, c: q.c }, k = JSON.stringify(p), now = Date.now();
+  if (!force && k === RTR.lastKey && now - RTR.lastSent < 25000) return;
+  RTR.lastKey = k; RTR.lastSent = now;
+  sbFetch('presence?on_conflict=id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(p) }).catch(function(){});
+}
+function rtRestRead(){
+  if (!SHARED || !entered) return Promise.resolve(); if (!RT.id) RT.id = rtId();
+  var since = new Date(Date.now() - 20000).toISOString();
+  return sbFetch('presence?select=id,name,x,z,f,p,s,c,updated_at&updated_at=gte.' + encodeURIComponent(since) + '&id=neq.' + encodeURIComponent(RT.id) + '&limit=300')
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(rows){ if (!Array.isArray(rows)) return; var m = {}; rows.forEach(function(r){ if (typeof r.x !== 'number' || typeof r.z !== 'number') return; m[r.id] = [{ id: r.id, n: r.name || '', c: r.c || {}, x: r.x, z: r.z, f: r.f || 0, p: r.p || 'stand', s: typeof r.s === 'number' ? r.s : -1, t: new Date(r.updated_at).getTime() }]; });
+      RTR.rows = m; var was = RTR.on; RTR.ok = true; RTR.on = !RT.on; rtMerge(); if (RTR.on !== was) rtStatus(); }).catch(function(){});
+}
+function rtMerge(){ // 표(REST) + 웹소켓 presence 를 합쳐 반영
+  var m = {}; Object.keys(RTR.rows).forEach(function(k){ m[k] = RTR.rows[k]; });
+  if (RT.on && RT.ch) { var ws = RT.ch.presenceState(); Object.keys(ws).forEach(function(k){ m[k] = ws[k]; }); }
+  rtSync(m);
+}
+setInterval(function(){ if (!SHARED || !entered) return; rtRestWrite(false); rtRestRead(); }, 5000);
 // ---------- 소리로 함께 바치기: 기도문·말씀을 읽어 줍니다 (브라우저 음성, 한국어) ----------
 var TTS = { on: !!store('chapel-voice'), ok: !!window.speechSynthesis };
 function ttsVoice(){ if (!TTS.ok) return null; var vs = speechSynthesis.getVoices(), ko = vs.filter(function(v){ return /^ko/i.test(v.lang); }); if (!ko.length) return null; var pref = ['Yuna', 'Google 한국의', 'SunHi', 'InJoon', 'Heami']; for (var i = 0; i < pref.length; i++) { var f = ko.filter(function(v){ return v.name.indexOf(pref[i]) >= 0; }); if (f.length) return f[0]; } return ko[0]; }
@@ -2950,7 +2976,7 @@ myAvatar.position.set(0, 0, 13.4); state.facing = 0; setPose(myAvatar, 'stand');
 camPos.set(0, 2.1, 16.4); camLook.set(0, 1.15, 13.4);
 evalMode();
 $('#enter').addEventListener('click', function(){
-  initAudio(); setSound(true); entered = true; unmuteKick(); audioResume(); rtInit(); recordVisit(); AMB.nextAt = Date.now() + 6000; // 들어오고 6초 뒤 첫 성가
+  initAudio(); setSound(true); entered = true; unmuteKick(); audioResume(); rtInit(); recordVisit(); setTimeout(function(){ rtRestWrite(true); rtRestRead(); }, 1500); AMB.nextAt = Date.now() + 6000; // 들어오고 6초 뒤 첫 성가
   if (mode !== 'mass' && !store('chapel-toured')) setTimeout(function(){ if (!anySheetOpen() && !state.special) openSheet('tour'); }, 2600);
   var g = $('#gate'); g.classList.add('away'); setTimeout(function(){ g.hidden = true; }, 700);
   bell(0.35);
@@ -2958,7 +2984,7 @@ $('#enter').addEventListener('click', function(){
   else { setTimeout(function(){ toast('바닥을 누르면 그곳으로 걸어갑니다. 금빛 점 가까이 가면 할 수 있는 일이 뜹니다.', 4200); }, 1200); }
 });
 loadGuest();
-window.__chapelDebug = { unmute: UNMUTE, audioResume: audioResume, audioStateText: audioStateText, amb: AMB, ambPlay: ambPlay, ambStop: ambStop, ambNext: ambNext, setHymns: setHymns, bow: bow, bows: bows, rtSeat: rtSeat, hymns: HYMNS, rtDraw: rtDraw, rtHidden: rtHidden, visits: VISITS, countVisits: countVisits, recordVisit: recordVisit, setBig: setBig, padStart: padStart, padStop: padStop, pickGreet: pickGreet, renderCandleNotes: renderCandleNotes, candleCards: candleCards, loadNotices: loadNotices, notices: function(){ return NOTICES; }, rt: RT, rtSync: rtSync, rtEmote: rtEmote, tour: TOUR, tourStart: tourStart, quizStart: quizStart, throwBall: throwBall, ball: BALL, startOrgan: startOrgan, organPlay: organPlay, liturgy: liturgy, LIT: LIT, sharePhoto: sharePhoto, snapshot: snapshot, nextMass: nextMass, billboards: billboards, realImg: REAL_IMG, scene: scene, camera: camera, THREE: THREE, interact: interact, walkTo: walkTo, goSit: goSit, peace: peace, ride: { swing: rideSwing, slide: rideSlide, end: endRide }, dogs: dogs, sister: sister, openArt: openArt, openStation: openStation, petDog: petDog, meetSister: meetSister, openAngelus: openAngelus, photo: function(px, py, pz, lx, ly, lz){ beginSpecial('photo', new THREE.Vector3(px, py, pz), new THREE.Vector3(lx, ly, lz)); camPos.set(px, py, pz); camLook.set(lx, ly, lz); }, photoEnd: endSpecial, fx: { dove: fxDove, petals: fxPetals, halo: fxHalo, sparkle: fxSparkle }, obj: OBJ, inZone: inZone, signCross: signCross, amen: amen, daylight: function(d){ skyNight.material.opacity = 1 - d; sun.intensity = 0.12 + 0.75 * d; hemi.intensity = 0.45 + 0.5 * d; scene.fog.color.copy(FOG_NIGHT).lerp(FOG_DAY, d); scene.background.copy(FOG_NIGHT).lerp(FOG_DAY, d); windowMats.forEach(function(m){ m.color.setScalar(0.55 + 0.7 * d); }); glassPatches.forEach(function(p){ p.material.opacity = 0.42 * d; }); }, teleport: function(x, z, tx, tz){ walker = null; if (state.seated) leaveSeat(); myAvatar.position.set(x, 0, z); if (tx !== undefined) { faceTo(tx, tz); myAvatar.rotation.y = state.facing; } var w = desiredCamera(); camPos.copy(w.pos); camLook.copy(w.look); }, snapCam: function(){ var w = desiredCamera(); camPos.copy(w.pos); camLook.copy(w.look); }, setJoy: function(x, y){ joy.x = x; joy.y = y; joy.active = !!(x || y); }, openSheet: openSheet, closeSheets: closeSheets, seats: seats, setView: setView, state: function(){ return { mode: mode, seated: state.seated, posture: state.posture, special: state.special, pos: [myAvatar.position.x, myAvatar.position.z], walking: !!walker, view: view, near: nearObj(), candles: rackSlots.filter(function(s){ return s.used; }).length, ride: ride ? ride.kind : null, fx: FX.length }; } };
+window.__chapelDebug = { rtr: RTR, rtRestRead: rtRestRead, rtRestWrite: rtRestWrite, rtMerge: rtMerge, unmute: UNMUTE, audioResume: audioResume, audioStateText: audioStateText, amb: AMB, ambPlay: ambPlay, ambStop: ambStop, ambNext: ambNext, setHymns: setHymns, bow: bow, bows: bows, rtSeat: rtSeat, hymns: HYMNS, rtDraw: rtDraw, rtHidden: rtHidden, visits: VISITS, countVisits: countVisits, recordVisit: recordVisit, setBig: setBig, padStart: padStart, padStop: padStop, pickGreet: pickGreet, renderCandleNotes: renderCandleNotes, candleCards: candleCards, loadNotices: loadNotices, notices: function(){ return NOTICES; }, rt: RT, rtSync: rtSync, rtEmote: rtEmote, tour: TOUR, tourStart: tourStart, quizStart: quizStart, throwBall: throwBall, ball: BALL, startOrgan: startOrgan, organPlay: organPlay, liturgy: liturgy, LIT: LIT, sharePhoto: sharePhoto, snapshot: snapshot, nextMass: nextMass, billboards: billboards, realImg: REAL_IMG, scene: scene, camera: camera, THREE: THREE, interact: interact, walkTo: walkTo, goSit: goSit, peace: peace, ride: { swing: rideSwing, slide: rideSlide, end: endRide }, dogs: dogs, sister: sister, openArt: openArt, openStation: openStation, petDog: petDog, meetSister: meetSister, openAngelus: openAngelus, photo: function(px, py, pz, lx, ly, lz){ beginSpecial('photo', new THREE.Vector3(px, py, pz), new THREE.Vector3(lx, ly, lz)); camPos.set(px, py, pz); camLook.set(lx, ly, lz); }, photoEnd: endSpecial, fx: { dove: fxDove, petals: fxPetals, halo: fxHalo, sparkle: fxSparkle }, obj: OBJ, inZone: inZone, signCross: signCross, amen: amen, daylight: function(d){ skyNight.material.opacity = 1 - d; sun.intensity = 0.12 + 0.75 * d; hemi.intensity = 0.45 + 0.5 * d; scene.fog.color.copy(FOG_NIGHT).lerp(FOG_DAY, d); scene.background.copy(FOG_NIGHT).lerp(FOG_DAY, d); windowMats.forEach(function(m){ m.color.setScalar(0.55 + 0.7 * d); }); glassPatches.forEach(function(p){ p.material.opacity = 0.42 * d; }); }, teleport: function(x, z, tx, tz){ walker = null; if (state.seated) leaveSeat(); myAvatar.position.set(x, 0, z); if (tx !== undefined) { faceTo(tx, tz); myAvatar.rotation.y = state.facing; } var w = desiredCamera(); camPos.copy(w.pos); camLook.copy(w.look); }, snapCam: function(){ var w = desiredCamera(); camPos.copy(w.pos); camLook.copy(w.look); }, setJoy: function(x, y){ joy.x = x; joy.y = y; joy.active = !!(x || y); }, openSheet: openSheet, closeSheets: closeSheets, seats: seats, setView: setView, state: function(){ return { mode: mode, seated: state.seated, posture: state.posture, special: state.special, pos: [myAvatar.position.x, myAvatar.position.z], walking: !!walker, view: view, near: nearObj(), candles: rackSlots.filter(function(s){ return s.used; }).length, ride: ride ? ride.kind : null, fx: FX.length }; } };
 })();
 </script>
 
