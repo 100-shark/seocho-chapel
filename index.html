@@ -2814,12 +2814,12 @@ function rtCount(){ return Object.keys(RT.peers).length + 1; }
 function rtStatus(){
   var el = $('#presence-n'), sm = $('#presence small');
   if (RT.on) { var hid = rtHidden(); el.textContent = rtCount() + '명이 함께 있어요'; if (sm) sm.textContent = hid ? '실시간 · 가까운 ' + (rtCount() - 1 - hid) + '명만 보임' : '실시간'; $('#presence').title = '지금 이 경당에 들어와 있는 사람'; }
-  else if (SHARED && RTR.on) { el.textContent = rtCount() + '명이 함께 있어요'; if (sm) sm.textContent = '보조 연결'; $('#presence').title = '실시간 연결이 막힌 네트워크라 5초마다 갱신하는 보조 연결로 함께 있습니다. 남의 움직임이 조금 늦게 보입니다.'; }
+  else if (SHARED && RTR.on) { el.textContent = rtCount() + '명이 함께 있어요'; if (sm) sm.textContent = '보조 연결'; $('#presence').title = '실시간 연결이 막힌 네트워크라 보조 연결(1~2초 간격)로 함께 있습니다. 평화의 인사·촛불 알림 같은 즉시 효과는 전달되지 않습니다.'; }
   else if (SHARED) { el.textContent = presence + '명이 함께 있어요'; if (sm) sm.textContent = RT.err ? '연결 끊김' : '연결 중'; $('#presence').title = RT.err ? '함께 있기 연결이 끊겼습니다(접속이 많거나 네트워크 문제). 경당은 그대로 쓸 수 있고, 잠시 뒤 다시 이어집니다.' : '함께 있기에 연결하는 중'; }
 }
 function rtNames(){ return Object.keys(RT.peers).map(function(k){ return RT.peers[k].name; }); }
-function updatePeers(dt){ // (v11) 그려진 사람만 움직입니다. 1초마다 누구를 그릴지 다시 고릅니다
-  if (!RT || !RT.on) return;
+function updatePeers(dt){ // (v11) 그려진 사람만 움직입니다. 1초마다 누구를 그릴지 다시 고릅니다 (v15: 보조 연결에서도)
+  if (!rtLive()) return;
   rtDraw(false);
   var t = clock.elapsedTime;
   Object.keys(RT.peers).forEach(function(key){
@@ -2851,31 +2851,41 @@ function rtEmote(p){
   else if (p.k === 'organ' && typeof organNote === 'function' && typeof p.f === 'number') { initAudio(); organNote(p.f, 0.2, 0.9, true); if (Date.now() - RT.organToast > 20000) { RT.organToast = Date.now(); toast(who + '님이 오르간을 연주합니다.', 2400); } }
   else if (p.k === 'hymn' && typeof organPlay === 'function' && HYMNS[p.h]) { if (!organ.on) { initAudio(); organPlay(p.h, true); toast(who + '님이 「' + HYMNS[p.h].name + '」을 연주합니다.', 3000); } }
 }
-// ---------- 함께 있기 보조 연결: 실시간(웹소켓)이 막힌 네트워크(회사 Wi-Fi·일부 앱 안 브라우저)에서는 presence 표에 5초마다 내 위치를 적고 남의 위치를 읽습니다 ----------
-// 웹소켓이 되는 사람도 표에 적어 두어(바뀔 때 5초, 그대로면 25초마다) 보조 연결인 사람에게 보입니다. 두 경로가 겹치면 웹소켓 쪽을 씁니다.
-var RTR = { on: false, rows: {}, lastSent: 0, lastKey: '', ok: false };
+// ---------- 함께 있기 보조 연결 (v15): 실시간(웹소켓)이 막힌 네트워크(회사 Wi-Fi·일부 앱 안 브라우저)에서는 presence 표(REST)로 위치를 주고받습니다 ----------
+// 보조 연결인 사람: 움직이면 1.2초마다 적고 1.5초마다 읽음(거의 실시간). 실시간 사용자: 보조 연결인 사람이 있을 때만 같은 속도로 적고 읽고, 없으면 15초·8초마다만.
+// 모두가 표에 적되 c.ws 로 "나는 실시간 연결"을 표시 → 실시간 사용자는 그런 줄을 읽지 않음(웹소켓으로 이미 보임, 나간 사람이 표에 남아 보이는 일도 없음).
+// 나갈 때는 p='gone' 으로 적어 바로 사라지게 합니다. 두 경로가 겹치면 웹소켓 쪽을 씁니다.
+var RTR = { on: false, rows: {}, restOnly: 0, lastSent: 0, lastKey: '', ok: false, nextRead: 0, nextWrite: 0 };
 function rtLive(){ return !!((typeof RT !== 'undefined' && RT && RT.on) || (typeof RTR !== 'undefined' && RTR && RTR.on)); } // 시작 직후(RT·RTR 할당 전)에도 불립니다
+function rtRestFast(){ return !RT.on || RTR.restOnly > 0; }
 function rtRestWrite(force){
   if (!SHARED || !entered) return; if (!RT.id) RT.id = rtId();
-  var q = rtPayload(), p = { id: q.id, name: q.n, x: q.x, z: q.z, f: q.f, p: q.p, s: q.s, c: q.c }, k = JSON.stringify(p), now = Date.now();
-  if (!force && k === RTR.lastKey && now - RTR.lastSent < 25000) return;
+  var q = rtPayload(), p = { id: q.id, name: q.n, x: q.x, z: q.z, f: q.f, p: q.p, s: q.s, c: Object.assign({ ws: RT.on ? 1 : 0 }, q.c) }, k = JSON.stringify(p), now = Date.now();
+  if (!force) { if (k === RTR.lastKey) { if (now - RTR.lastSent < 15000) return; } else if (!rtRestFast() && now - RTR.lastSent < 15000) return; } // 그대로면 15초마다, 바뀌면 바로(느린 모드에선 15초마다)
   RTR.lastKey = k; RTR.lastSent = now;
   sbFetch('presence?on_conflict=id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(p) }).catch(function(){});
 }
 function rtRestRead(){
   if (!SHARED || !entered) return Promise.resolve(); if (!RT.id) RT.id = rtId();
-  var since = new Date(Date.now() - 20000).toISOString();
-  return sbFetch('presence?select=id,name,x,z,f,p,s,c,updated_at&updated_at=gte.' + encodeURIComponent(since) + '&id=neq.' + encodeURIComponent(RT.id) + '&limit=300')
-    .then(function(r){ return r.ok ? r.json() : null; })
-    .then(function(rows){ if (!Array.isArray(rows)) return; var m = {}; rows.forEach(function(r){ if (typeof r.x !== 'number' || typeof r.z !== 'number') return; m[r.id] = [{ id: r.id, n: r.name || '', c: r.c || {}, x: r.x, z: r.z, f: r.f || 0, p: r.p || 'stand', s: typeof r.s === 'number' ? r.s : -1, t: new Date(r.updated_at).getTime() }]; });
+  var since = new Date(Date.now() - 30000).toISOString(), q = 'presence?select=id,name,x,z,f,p,s,c,updated_at&updated_at=gte.' + encodeURIComponent(since) + '&id=neq.' + encodeURIComponent(RT.id) + '&p=neq.gone&limit=300';
+  if (RT.on) q += '&c-%3E%3Ews=eq.0'; // 실시간 사용자는 보조 연결인 사람 줄만 (c->>ws = 0)
+  return sbFetch(q).then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(rows){ if (!Array.isArray(rows)) return; var m = {}; rows.forEach(function(r){ if (typeof r.x !== 'number' || typeof r.z !== 'number' || r.p === 'gone') return; m[r.id] = [{ id: r.id, n: r.name || '', c: r.c || {}, x: r.x, z: r.z, f: r.f || 0, p: r.p || 'stand', s: typeof r.s === 'number' ? r.s : -1, t: new Date(r.updated_at).getTime() }]; });
       RTR.rows = m; var was = RTR.on; RTR.ok = true; RTR.on = !RT.on; rtMerge(); if (RTR.on !== was) rtStatus(); }).catch(function(){});
 }
-function rtMerge(){ // 표(REST) + 웹소켓 presence 를 합쳐 반영
-  var m = {}; Object.keys(RTR.rows).forEach(function(k){ m[k] = RTR.rows[k]; });
-  if (RT.on && RT.ch) { var ws = RT.ch.presenceState(); Object.keys(ws).forEach(function(k){ m[k] = ws[k]; }); }
-  rtSync(m);
+function rtMerge(){ // 표(REST) + 웹소켓 presence 를 합쳐 반영. 실시간 사용자에게 표에만 있는 사람 수(restOnly)가 빠른 모드를 정합니다
+  var m = {}, ws = (RT.on && RT.ch) ? RT.ch.presenceState() : {}, n = 0;
+  Object.keys(RTR.rows).forEach(function(k){ if (!ws[k]) n++; m[k] = RTR.rows[k]; });
+  Object.keys(ws).forEach(function(k){ m[k] = ws[k]; });
+  RTR.restOnly = n; rtSync(m);
 }
-setInterval(function(){ if (!SHARED || !entered) return; rtRestWrite(false); rtRestRead(); }, 5000);
+function rtRestLeave(){ if (!SHARED || !entered || !RT.id) return; try { sbFetch('presence?on_conflict=id', { method: 'POST', keepalive: true, headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify({ id: RT.id, p: 'gone' }) }).catch(function(){}); } catch (e) {} }
+window.addEventListener('pagehide', rtRestLeave);
+setInterval(function(){
+  if (!SHARED || !entered) return; var now = Date.now(), fast = rtRestFast();
+  if (now >= RTR.nextWrite) { RTR.nextWrite = now + (fast ? 1200 : 5000); rtRestWrite(false); }
+  if (now >= RTR.nextRead) { RTR.nextRead = now + (fast ? 1500 : 8000); rtRestRead(); }
+}, 300);
 // ---------- 소리로 함께 바치기: 기도문·말씀을 읽어 줍니다 (브라우저 음성, 한국어) ----------
 var TTS = { on: !!store('chapel-voice'), ok: !!window.speechSynthesis };
 function ttsVoice(){ if (!TTS.ok) return null; var vs = speechSynthesis.getVoices(), ko = vs.filter(function(v){ return /^ko/i.test(v.lang); }); if (!ko.length) return null; var pref = ['Yuna', 'Google 한국의', 'SunHi', 'InJoon', 'Heami']; for (var i = 0; i < pref.length; i++) { var f = ko.filter(function(v){ return v.name.indexOf(pref[i]) >= 0; }); if (f.length) return f[0]; } return ko[0]; }
@@ -2984,7 +2994,7 @@ $('#enter').addEventListener('click', function(){
   else { setTimeout(function(){ toast('바닥을 누르면 그곳으로 걸어갑니다. 금빛 점 가까이 가면 할 수 있는 일이 뜹니다.', 4200); }, 1200); }
 });
 loadGuest();
-window.__chapelDebug = { rtr: RTR, rtRestRead: rtRestRead, rtRestWrite: rtRestWrite, rtMerge: rtMerge, unmute: UNMUTE, audioResume: audioResume, audioStateText: audioStateText, amb: AMB, ambPlay: ambPlay, ambStop: ambStop, ambNext: ambNext, setHymns: setHymns, bow: bow, bows: bows, rtSeat: rtSeat, hymns: HYMNS, rtDraw: rtDraw, rtHidden: rtHidden, visits: VISITS, countVisits: countVisits, recordVisit: recordVisit, setBig: setBig, padStart: padStart, padStop: padStop, pickGreet: pickGreet, renderCandleNotes: renderCandleNotes, candleCards: candleCards, loadNotices: loadNotices, notices: function(){ return NOTICES; }, rt: RT, rtSync: rtSync, rtEmote: rtEmote, tour: TOUR, tourStart: tourStart, quizStart: quizStart, throwBall: throwBall, ball: BALL, startOrgan: startOrgan, organPlay: organPlay, liturgy: liturgy, LIT: LIT, sharePhoto: sharePhoto, snapshot: snapshot, nextMass: nextMass, billboards: billboards, realImg: REAL_IMG, scene: scene, camera: camera, THREE: THREE, interact: interact, walkTo: walkTo, goSit: goSit, peace: peace, ride: { swing: rideSwing, slide: rideSlide, end: endRide }, dogs: dogs, sister: sister, openArt: openArt, openStation: openStation, petDog: petDog, meetSister: meetSister, openAngelus: openAngelus, photo: function(px, py, pz, lx, ly, lz){ beginSpecial('photo', new THREE.Vector3(px, py, pz), new THREE.Vector3(lx, ly, lz)); camPos.set(px, py, pz); camLook.set(lx, ly, lz); }, photoEnd: endSpecial, fx: { dove: fxDove, petals: fxPetals, halo: fxHalo, sparkle: fxSparkle }, obj: OBJ, inZone: inZone, signCross: signCross, amen: amen, daylight: function(d){ skyNight.material.opacity = 1 - d; sun.intensity = 0.12 + 0.75 * d; hemi.intensity = 0.45 + 0.5 * d; scene.fog.color.copy(FOG_NIGHT).lerp(FOG_DAY, d); scene.background.copy(FOG_NIGHT).lerp(FOG_DAY, d); windowMats.forEach(function(m){ m.color.setScalar(0.55 + 0.7 * d); }); glassPatches.forEach(function(p){ p.material.opacity = 0.42 * d; }); }, teleport: function(x, z, tx, tz){ walker = null; if (state.seated) leaveSeat(); myAvatar.position.set(x, 0, z); if (tx !== undefined) { faceTo(tx, tz); myAvatar.rotation.y = state.facing; } var w = desiredCamera(); camPos.copy(w.pos); camLook.copy(w.look); }, snapCam: function(){ var w = desiredCamera(); camPos.copy(w.pos); camLook.copy(w.look); }, setJoy: function(x, y){ joy.x = x; joy.y = y; joy.active = !!(x || y); }, openSheet: openSheet, closeSheets: closeSheets, seats: seats, setView: setView, state: function(){ return { mode: mode, seated: state.seated, posture: state.posture, special: state.special, pos: [myAvatar.position.x, myAvatar.position.z], walking: !!walker, view: view, near: nearObj(), candles: rackSlots.filter(function(s){ return s.used; }).length, ride: ride ? ride.kind : null, fx: FX.length }; } };
+window.__chapelDebug = { rtRestLeave: rtRestLeave, rtr: RTR, rtRestRead: rtRestRead, rtRestWrite: rtRestWrite, rtMerge: rtMerge, unmute: UNMUTE, audioResume: audioResume, audioStateText: audioStateText, amb: AMB, ambPlay: ambPlay, ambStop: ambStop, ambNext: ambNext, setHymns: setHymns, bow: bow, bows: bows, rtSeat: rtSeat, hymns: HYMNS, rtDraw: rtDraw, rtHidden: rtHidden, visits: VISITS, countVisits: countVisits, recordVisit: recordVisit, setBig: setBig, padStart: padStart, padStop: padStop, pickGreet: pickGreet, renderCandleNotes: renderCandleNotes, candleCards: candleCards, loadNotices: loadNotices, notices: function(){ return NOTICES; }, rt: RT, rtSync: rtSync, rtEmote: rtEmote, tour: TOUR, tourStart: tourStart, quizStart: quizStart, throwBall: throwBall, ball: BALL, startOrgan: startOrgan, organPlay: organPlay, liturgy: liturgy, LIT: LIT, sharePhoto: sharePhoto, snapshot: snapshot, nextMass: nextMass, billboards: billboards, realImg: REAL_IMG, scene: scene, camera: camera, THREE: THREE, interact: interact, walkTo: walkTo, goSit: goSit, peace: peace, ride: { swing: rideSwing, slide: rideSlide, end: endRide }, dogs: dogs, sister: sister, openArt: openArt, openStation: openStation, petDog: petDog, meetSister: meetSister, openAngelus: openAngelus, photo: function(px, py, pz, lx, ly, lz){ beginSpecial('photo', new THREE.Vector3(px, py, pz), new THREE.Vector3(lx, ly, lz)); camPos.set(px, py, pz); camLook.set(lx, ly, lz); }, photoEnd: endSpecial, fx: { dove: fxDove, petals: fxPetals, halo: fxHalo, sparkle: fxSparkle }, obj: OBJ, inZone: inZone, signCross: signCross, amen: amen, daylight: function(d){ skyNight.material.opacity = 1 - d; sun.intensity = 0.12 + 0.75 * d; hemi.intensity = 0.45 + 0.5 * d; scene.fog.color.copy(FOG_NIGHT).lerp(FOG_DAY, d); scene.background.copy(FOG_NIGHT).lerp(FOG_DAY, d); windowMats.forEach(function(m){ m.color.setScalar(0.55 + 0.7 * d); }); glassPatches.forEach(function(p){ p.material.opacity = 0.42 * d; }); }, teleport: function(x, z, tx, tz){ walker = null; if (state.seated) leaveSeat(); myAvatar.position.set(x, 0, z); if (tx !== undefined) { faceTo(tx, tz); myAvatar.rotation.y = state.facing; } var w = desiredCamera(); camPos.copy(w.pos); camLook.copy(w.look); }, snapCam: function(){ var w = desiredCamera(); camPos.copy(w.pos); camLook.copy(w.look); }, setJoy: function(x, y){ joy.x = x; joy.y = y; joy.active = !!(x || y); }, openSheet: openSheet, closeSheets: closeSheets, seats: seats, setView: setView, state: function(){ return { mode: mode, seated: state.seated, posture: state.posture, special: state.special, pos: [myAvatar.position.x, myAvatar.position.z], walking: !!walker, view: view, near: nearObj(), candles: rackSlots.filter(function(s){ return s.used; }).length, ride: ride ? ride.kind : null, fx: FX.length }; } };
 })();
 </script>
 
