@@ -2650,7 +2650,7 @@ $('#ro-reset').addEventListener('click', function(){ ro.step = 0; renderRosary()
 renderRosary();
 
 // ---------- 함께 있기: 실제로 들어와 있는 형제자매가 서로 보입니다 (Supabase Realtime presence · 자체 주소에서만) ----------
-var RT = { on: false, ch: null, sb: null, peers: {}, id: null, lastSent: 0, lastKey: '', hb: 0, synced: false, organToast: 0 };
+var RT = { on: false, ch: null, sb: null, peers: {}, id: null, lastSent: 0, lastKey: '', hb: 0, synced: false, organToast: 0, maxDrawn: 24, drawT: 0 }; // maxDrawn: 한 번에 그리는 다른 사람 아바타 수
 function rtId(){ var id = store('chapel-rtid'); if (!id) { id = 'p' + Math.random().toString(36).slice(2, 10); store('chapel-rtid', id); } return id; }
 function rtCfg(){ return { cloth: me.cloth, hair: me.hair, hairc: me.hairc, veil: !!me.veil, rosary: !!me.rosary, skin: me.skin, face: me.face, glasses: !!me.glasses, bangs: !!me.bangs, skirt: !!me.skirt, bottom: me.bottom }; }
 function rtPayload(){ return { id: RT.id, n: (me.name || '').slice(0, 12), c: rtCfg(), x: Math.round(myAvatar.position.x * 100) / 100, z: Math.round(myAvatar.position.z * 100) / 100, f: Math.round(state.facing * 100) / 100, p: myAvatar.userData.pose || 'stand', s: state.seated && mySeat ? seats.indexOf(mySeat) : -1, t: Date.now() }; }
@@ -2673,8 +2673,8 @@ function rtInit(){
 function rtTrack(force){
   if (!RT || !RT.on || !RT.ch || !entered) return;
   var p = rtPayload(), k = rtKey(p), now = Date.now();
-  if (!force && k === RT.lastKey && now - RT.hb < 20000) return;
-  if (!force && now - RT.lastSent < 700) return;
+  if (!force && k === RT.lastKey && now - RT.hb < 30000) return;
+  if (!force && now - RT.lastSent < 1000) return;
   RT.lastSent = now; RT.hb = now; RT.lastKey = k;
   try { RT.ch.track(p); } catch (e) {}
 }
@@ -2685,7 +2685,7 @@ function rtSend(kind, extra){ // 가까운 사람에게 보이는 작은 몸짓:
   try { RT.ch.send({ type: 'broadcast', event: 'emote', payload: p }); } catch (e) {}
 }
 function rtCfgOf(p){ return Object.assign({ cloth: 0, hair: 'short', hairc: 1, skin: 1 }, p && p.c ? p.c : {}); }
-function rtSync(stateMap){
+function rtSync(stateMap){ // (v11) 들어와 있는 사람은 모두 세되, 아바타는 가까운 RT.maxDrawn 명만 그립니다 (rtDraw)
   var seen = {}, joined = [];
   Object.keys(stateMap || {}).forEach(function(key){
     if (key === RT.id) return;
@@ -2693,39 +2693,49 @@ function rtSync(stateMap){
     var p = metas[metas.length - 1]; if (!p || typeof p.x !== 'number' || typeof p.z !== 'number') return;
     seen[key] = true;
     var peer = RT.peers[key], cfgS = JSON.stringify(rtCfgOf(p));
-    if (!peer) {
-      var ng; try { ng = buildAvatar(rtCfgOf(p)); } catch (e) { try { ng = buildAvatar({}); } catch (e2) { return; } }
-      peer = RT.peers[key] = { g: ng, cfg: cfgS, name: p.n || '순례자', tx: p.x, tz: p.z, f: p.f || 0, pose: 'stand', seat: -1, moving: false };
-      peer.g.position.set(p.x, 0, p.z); peer.g.rotation.y = p.f || 0; scene.add(peer.g);
-      avatars.push({ g: peer.g, name: peer.name, peer: peer, ph: Math.random() * 6 }); if (RT.synced) joined.push(peer.name);
-    } else if (cfgS !== peer.cfg) {
-      var old = peer.g, pos = old.position.clone(), rot = old.rotation.y, ng2; try { ng2 = buildAvatar(rtCfgOf(p)); } catch (e) { ng2 = null; }
-      if (!ng2) { peer.cfg = cfgS; } else { scene.remove(old); peer.g = ng2; peer.cfg = cfgS; } peer.g.position.copy(pos); peer.g.rotation.y = rot; scene.add(peer.g); peer.pose = 'stand';
-      avatars.forEach(function(a){ if (a.peer === peer) a.g = peer.g; });
-    }
+    if (!peer) { peer = RT.peers[key] = { key: key, g: null, cfg: cfgS, name: p.n || '순례자', tx: p.x, tz: p.z, f: p.f || 0, pose: 'stand', seat: -1, moving: false }; if (RT.synced) joined.push(peer.name); }
+    else if (cfgS !== peer.cfg) { peer.cfg = cfgS; if (peer.g) { rtUndraw(peer); rtDrawPeer(peer); } } // 옷차림이 바뀌면 다시 그림
     peer.name = p.n || '순례자'; avatars.forEach(function(a){ if (a.peer === peer) a.name = peer.name; });
     var pose = p.p || 'stand', seat = typeof p.s === 'number' ? p.s : -1;
     peer.tx = p.x; peer.tz = p.z; peer.f = p.f || 0;
     if (seat >= 0 && seats[seat]) { var s = seats[seat]; peer.tx = s.x; peer.tz = pose === 'kneel' ? s.z - 0.42 : s.z; peer.f = 0; }
-    if (pose !== peer.pose) { setPose(peer.g, pose); peer.pose = pose; }
+    if (pose !== peer.pose) { peer.pose = pose; if (peer.g) setPose(peer.g, pose); }
     peer.seat = seat;
   });
-  Object.keys(RT.peers).forEach(function(key){ if (!seen[key]) { var peer = RT.peers[key]; scene.remove(peer.g); avatars = avatars.filter(function(a){ return a.peer !== peer; }); delete RT.peers[key]; } });
-  if (joined.length) toast(joined.slice(0, 2).join(', ') + '님이 경당에 들어왔습니다.', 2600);
+  Object.keys(RT.peers).forEach(function(key){ if (!seen[key]) { rtUndraw(RT.peers[key]); delete RT.peers[key]; } });
+  rtDraw(true);
+  if (joined.length) toast(joined.slice(0, 2).join(', ') + (joined.length > 2 ? ' 외 ' + (joined.length - 2) + '명' : '') + '님이 경당에 들어왔습니다.', 2600);
   RT.synced = true; rtStatus();
 }
+function rtDrawPeer(peer){ // 아바타를 만들어 장면에 올립니다
+  var g; try { g = buildAvatar(JSON.parse(peer.cfg)); } catch (e) { try { g = buildAvatar({}); } catch (e2) { return; } }
+  g.position.set(peer.tx, 0, peer.tz); g.rotation.y = peer.f; setPose(g, peer.pose); scene.add(g); peer.g = g;
+  avatars.push({ g: g, name: peer.name, peer: peer, ph: Math.random() * 6 });
+}
+function rtUndraw(peer){ if (!peer.g) return; scene.remove(peer.g); avatars = avatars.filter(function(a){ return a.peer !== peer; }); peer.g = null; }
+function rtDraw(force){ // 가까운 순으로 RT.maxDrawn 명만 그립니다. 나머지는 "함께 있어요" 숫자에만 들어갑니다 (사람이 많아도 휴대폰이 느려지지 않게)
+  var now = Date.now(); if (!force && now - RT.drawT < 1000) return; RT.drawT = now;
+  var keys = Object.keys(RT.peers), mx = myAvatar.position.x, mz = myAvatar.position.z;
+  if (keys.length <= RT.maxDrawn) { keys.forEach(function(k){ if (!RT.peers[k].g) rtDrawPeer(RT.peers[k]); }); return; }
+  var ranked = keys.map(function(k){ var p = RT.peers[k]; return { p: p, d: Math.hypot(p.tx - mx, p.tz - mz) }; }).sort(function(a, b){ return a.d - b.d; });
+  var keep = {}; ranked.forEach(function(r, i){ if (i < RT.maxDrawn || (r.p.g && i < RT.maxDrawn + 6)) keep[r.p.key] = true; }); // 경계에 걸친 사람이 깜빡이지 않도록 이미 그린 사람은 6명까지 여유
+  ranked.forEach(function(r){ if (keep[r.p.key]) { if (!r.p.g) rtDrawPeer(r.p); } else rtUndraw(r.p); });
+}
+function rtHidden(){ var n = 0; Object.keys(RT.peers).forEach(function(k){ if (!RT.peers[k].g) n++; }); return n; }
 function rtCount(){ return Object.keys(RT.peers).length + 1; }
 function rtStatus(){
   var el = $('#presence-n'), sm = $('#presence small');
-  if (RT.on) { el.textContent = rtCount() + '명이 함께 있어요'; if (sm) sm.textContent = '실시간'; $('#presence').title = '지금 이 경당에 들어와 있는 사람'; }
+  if (RT.on) { var hid = rtHidden(); el.textContent = rtCount() + '명이 함께 있어요'; if (sm) sm.textContent = hid ? '실시간 · 가까운 ' + (rtCount() - 1 - hid) + '명만 보임' : '실시간'; $('#presence').title = '지금 이 경당에 들어와 있는 사람'; }
   else if (SHARED) { el.textContent = presence + '명이 함께 있어요'; if (sm) sm.textContent = '연결 중'; }
 }
 function rtNames(){ return Object.keys(RT.peers).map(function(k){ return RT.peers[k].name; }); }
-function updatePeers(dt){
+function updatePeers(dt){ // (v11) 그려진 사람만 움직입니다. 1초마다 누구를 그릴지 다시 고릅니다
   if (!RT || !RT.on) return;
+  rtDraw(false);
   var t = clock.elapsedTime;
   Object.keys(RT.peers).forEach(function(key){
-    var p = RT.peers[key], g = p.g, dx = p.tx - g.position.x, dz = p.tz - g.position.z, d = Math.hypot(dx, dz), moving = false;
+    var p = RT.peers[key], g = p.g; if (!g) return;
+    var dx = p.tx - g.position.x, dz = p.tz - g.position.z, d = Math.hypot(dx, dz), moving = false;
     if (d > 6) { g.position.x = p.tx; g.position.z = p.tz; }
     else if (d > 0.03) { var st = Math.min(d, 2.4 * dt); g.position.x += dx / d * st; g.position.z += dz / d * st; moving = d > 0.12; if (moving) p.f = Math.atan2(-dx, -dz); }
     var cur = g.rotation.y, diff = Math.atan2(Math.sin(p.f - cur), Math.cos(p.f - cur)); g.rotation.y = cur + diff * Math.min(1, dt * 6);
@@ -2860,7 +2870,7 @@ $('#enter').addEventListener('click', function(){
   else { setTimeout(function(){ toast('바닥을 누르면 그곳으로 걸어갑니다. 금빛 점 가까이 가면 할 수 있는 일이 뜹니다.', 4200); }, 1200); }
 });
 loadGuest();
-window.__chapelDebug = { visits: VISITS, countVisits: countVisits, recordVisit: recordVisit, setBig: setBig, padStart: padStart, padStop: padStop, pickGreet: pickGreet, renderCandleNotes: renderCandleNotes, candleCards: candleCards, loadNotices: loadNotices, notices: function(){ return NOTICES; }, rt: RT, rtSync: rtSync, rtEmote: rtEmote, tour: TOUR, tourStart: tourStart, quizStart: quizStart, throwBall: throwBall, ball: BALL, startOrgan: startOrgan, organPlay: organPlay, liturgy: liturgy, LIT: LIT, sharePhoto: sharePhoto, snapshot: snapshot, nextMass: nextMass, billboards: billboards, realImg: REAL_IMG, scene: scene, camera: camera, THREE: THREE, interact: interact, walkTo: walkTo, goSit: goSit, peace: peace, ride: { swing: rideSwing, slide: rideSlide, end: endRide }, dogs: dogs, sister: sister, openArt: openArt, openStation: openStation, petDog: petDog, meetSister: meetSister, openAngelus: openAngelus, photo: function(px, py, pz, lx, ly, lz){ beginSpecial('photo', new THREE.Vector3(px, py, pz), new THREE.Vector3(lx, ly, lz)); camPos.set(px, py, pz); camLook.set(lx, ly, lz); }, photoEnd: endSpecial, fx: { dove: fxDove, petals: fxPetals, halo: fxHalo, sparkle: fxSparkle }, obj: OBJ, inZone: inZone, signCross: signCross, amen: amen, daylight: function(d){ skyNight.material.opacity = 1 - d; sun.intensity = 0.12 + 0.75 * d; hemi.intensity = 0.45 + 0.5 * d; scene.fog.color.copy(FOG_NIGHT).lerp(FOG_DAY, d); scene.background.copy(FOG_NIGHT).lerp(FOG_DAY, d); windowMats.forEach(function(m){ m.color.setScalar(0.55 + 0.7 * d); }); glassPatches.forEach(function(p){ p.material.opacity = 0.42 * d; }); }, teleport: function(x, z, tx, tz){ walker = null; if (state.seated) leaveSeat(); myAvatar.position.set(x, 0, z); if (tx !== undefined) { faceTo(tx, tz); myAvatar.rotation.y = state.facing; } var w = desiredCamera(); camPos.copy(w.pos); camLook.copy(w.look); }, snapCam: function(){ var w = desiredCamera(); camPos.copy(w.pos); camLook.copy(w.look); }, setJoy: function(x, y){ joy.x = x; joy.y = y; joy.active = !!(x || y); }, openSheet: openSheet, closeSheets: closeSheets, seats: seats, setView: setView, state: function(){ return { mode: mode, seated: state.seated, posture: state.posture, special: state.special, pos: [myAvatar.position.x, myAvatar.position.z], walking: !!walker, view: view, near: nearObj(), candles: rackSlots.filter(function(s){ return s.used; }).length, ride: ride ? ride.kind : null, fx: FX.length }; } };
+window.__chapelDebug = { rtDraw: rtDraw, rtHidden: rtHidden, visits: VISITS, countVisits: countVisits, recordVisit: recordVisit, setBig: setBig, padStart: padStart, padStop: padStop, pickGreet: pickGreet, renderCandleNotes: renderCandleNotes, candleCards: candleCards, loadNotices: loadNotices, notices: function(){ return NOTICES; }, rt: RT, rtSync: rtSync, rtEmote: rtEmote, tour: TOUR, tourStart: tourStart, quizStart: quizStart, throwBall: throwBall, ball: BALL, startOrgan: startOrgan, organPlay: organPlay, liturgy: liturgy, LIT: LIT, sharePhoto: sharePhoto, snapshot: snapshot, nextMass: nextMass, billboards: billboards, realImg: REAL_IMG, scene: scene, camera: camera, THREE: THREE, interact: interact, walkTo: walkTo, goSit: goSit, peace: peace, ride: { swing: rideSwing, slide: rideSlide, end: endRide }, dogs: dogs, sister: sister, openArt: openArt, openStation: openStation, petDog: petDog, meetSister: meetSister, openAngelus: openAngelus, photo: function(px, py, pz, lx, ly, lz){ beginSpecial('photo', new THREE.Vector3(px, py, pz), new THREE.Vector3(lx, ly, lz)); camPos.set(px, py, pz); camLook.set(lx, ly, lz); }, photoEnd: endSpecial, fx: { dove: fxDove, petals: fxPetals, halo: fxHalo, sparkle: fxSparkle }, obj: OBJ, inZone: inZone, signCross: signCross, amen: amen, daylight: function(d){ skyNight.material.opacity = 1 - d; sun.intensity = 0.12 + 0.75 * d; hemi.intensity = 0.45 + 0.5 * d; scene.fog.color.copy(FOG_NIGHT).lerp(FOG_DAY, d); scene.background.copy(FOG_NIGHT).lerp(FOG_DAY, d); windowMats.forEach(function(m){ m.color.setScalar(0.55 + 0.7 * d); }); glassPatches.forEach(function(p){ p.material.opacity = 0.42 * d; }); }, teleport: function(x, z, tx, tz){ walker = null; if (state.seated) leaveSeat(); myAvatar.position.set(x, 0, z); if (tx !== undefined) { faceTo(tx, tz); myAvatar.rotation.y = state.facing; } var w = desiredCamera(); camPos.copy(w.pos); camLook.copy(w.look); }, snapCam: function(){ var w = desiredCamera(); camPos.copy(w.pos); camLook.copy(w.look); }, setJoy: function(x, y){ joy.x = x; joy.y = y; joy.active = !!(x || y); }, openSheet: openSheet, closeSheets: closeSheets, seats: seats, setView: setView, state: function(){ return { mode: mode, seated: state.seated, posture: state.posture, special: state.special, pos: [myAvatar.position.x, myAvatar.position.z], walking: !!walker, view: view, near: nearObj(), candles: rackSlots.filter(function(s){ return s.used; }).length, ride: ride ? ride.kind : null, fx: FX.length }; } };
 })();
 </script>
 
