@@ -2856,21 +2856,23 @@ function rtEmote(p){
 // 보조 연결인 사람: 움직이면 1.2초마다 적고 1.5초마다 읽음(거의 실시간). 실시간 사용자: 보조 연결인 사람이 있을 때만 같은 속도로 적고 읽고, 없으면 15초·8초마다만.
 // 모두가 표에 적되 c.ws 로 "나는 실시간 연결"을 표시 → 실시간 사용자는 그런 줄을 읽지 않음(웹소켓으로 이미 보임, 나간 사람이 표에 남아 보이는 일도 없음).
 // 나갈 때는 p='gone' 으로 적어 바로 사라지게 합니다. 두 경로가 겹치면 웹소켓 쪽을 씁니다.
-var RTR = { on: false, rows: {}, restOnly: 0, lastSent: 0, lastKey: '', ok: false, nextRead: 0, nextWrite: 0 };
+var RTR = { on: false, rows: {}, restOnly: 0, lastSent: 0, lastKey: '', ok: false, nextRead: 0, nextWrite: 0, sid: null };
 function rtLive(){ return !!((typeof RT !== 'undefined' && RT && RT.on) || (typeof RTR !== 'undefined' && RTR && RTR.on)); } // 시작 직후(RT·RTR 할당 전)에도 불립니다
 function rtRestFast(){ return !RT.on || RTR.restOnly > 0; }
+function rtRestId(){ // 표의 줄 번호는 접속마다 새로: 2분 넘게 지난 옛 줄은 읽기 정책에 가려 고칠 수 없으므로(42501) 늘 이번 접속의 새 줄에만 씁니다
+  if (!RT.id) RT.id = rtId(); if (!RTR.sid) RTR.sid = RT.id + '.' + Math.random().toString(36).slice(2, 6); return RTR.sid; }
 function rtRestWrite(force){
-  if (!SHARED || !entered) return; if (!RT.id) RT.id = rtId();
-  var q = rtPayload(), p = { id: q.id, name: q.n, x: q.x, z: q.z, f: q.f, p: q.p, s: q.s, c: Object.assign({ ws: RT.on ? 1 : 0 }, q.c) }, k = JSON.stringify(p), now = Date.now();
+  if (!SHARED || !entered) return; var rid = rtRestId();
+  var q = rtPayload(), p = { id: rid, name: q.n, x: q.x, z: q.z, f: q.f, p: q.p, s: q.s, c: Object.assign({ ws: RT.on ? 1 : 0 }, q.c) }, k = JSON.stringify(p), now = Date.now();
   if (!force) { if (k === RTR.lastKey) { if (now - RTR.lastSent < 15000) return; } else if (!rtRestFast() && now - RTR.lastSent < 15000) return; } // 그대로면 15초마다, 바뀌면 바로(느린 모드에선 15초마다)
   RTR.lastKey = k; RTR.lastSent = now;
   sbFetch('presence?on_conflict=id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(p) })
-    .then(function(r){ if ((r.status === 401 || r.status === 403) && !RT.on) { RT.id = 'p' + Math.random().toString(36).slice(2, 10); store('chapel-rtid', RT.id); RTR.lastKey = ''; } }) // 내 옛 줄을 못 고치는 경우(정책) 새 번호로 다시
+    .then(function(r){ if (r.status === 401 || r.status === 403) { RTR.sid = null; RTR.lastKey = ''; } }) // 혹시 거부되면 다음엔 또 새 줄로
     .catch(function(){});
 }
 function rtRestRead(){
-  if (!SHARED || !entered) return Promise.resolve(); if (!RT.id) RT.id = rtId();
-  var since = new Date(Date.now() - 30000).toISOString(), q = 'presence?select=id,name,x,z,f,p,s,c,updated_at&updated_at=gte.' + encodeURIComponent(since) + '&id=neq.' + encodeURIComponent(RT.id) + '&p=neq.gone&limit=300';
+  if (!SHARED || !entered) return Promise.resolve(); var rid = rtRestId();
+  var since = new Date(Date.now() - 30000).toISOString(), q = 'presence?select=id,name,x,z,f,p,s,c,updated_at&updated_at=gte.' + encodeURIComponent(since) + '&id=neq.' + encodeURIComponent(rid) + '&p=neq.gone&limit=300';
   if (RT.on) q += '&c-%3E%3Ews=eq.0'; // 실시간 사용자는 보조 연결인 사람 줄만 (c->>ws = 0)
   return sbFetch(q).then(function(r){ return r.ok ? r.json() : null; })
     .then(function(rows){ if (!Array.isArray(rows)) return; var m = {}; rows.forEach(function(r){ if (typeof r.x !== 'number' || typeof r.z !== 'number' || r.p === 'gone') return; m[r.id] = [{ id: r.id, n: r.name || '', c: r.c || {}, x: r.x, z: r.z, f: r.f || 0, p: r.p || 'stand', s: typeof r.s === 'number' ? r.s : -1, t: new Date(r.updated_at).getTime() }]; });
@@ -2882,7 +2884,7 @@ function rtMerge(){ // 표(REST) + 웹소켓 presence 를 합쳐 반영. 실시�
   Object.keys(ws).forEach(function(k){ m[k] = ws[k]; });
   RTR.restOnly = n; rtSync(m);
 }
-function rtRestLeave(){ if (!SHARED || !entered || !RT.id) return; try { sbFetch('presence?on_conflict=id', { method: 'POST', keepalive: true, headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify({ id: RT.id, p: 'gone' }) }).catch(function(){}); } catch (e) {} }
+function rtRestLeave(){ if (!SHARED || !entered || !RTR.sid) return; try { sbFetch('presence?on_conflict=id', { method: 'POST', keepalive: true, headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify({ id: RTR.sid, p: 'gone' }) }).catch(function(){}); } catch (e) {} }
 window.addEventListener('pagehide', rtRestLeave);
 setInterval(function(){
   if (!SHARED || !entered) return; var now = Date.now(), fast = rtRestFast();
