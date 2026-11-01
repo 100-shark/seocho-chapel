@@ -1,0 +1,25 @@
+{
+ "name": "서초동성당 온라인 경당",
+ "short_name": "온라인 경당",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "orientation": "portrait",
+ "background_color": "#18130f",
+ "theme_color": "#18130f",
+ "lang": "ko",
+ "description": "서초동성당의 생중계가 흐르는, 말없이 함께 기도하는 온라인 경당",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any maskable"
+  }
+ ]
+}
