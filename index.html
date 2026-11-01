@@ -344,7 +344,8 @@ body.mass #joy{opacity:.35}
     <button id="mo-quiz"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 1-1 1.7"/><path d="M12 17v.5"/></svg>교리 퀴즈<small>어린이·청년</small></button>
     <button id="mo-photo"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><circle cx="12" cy="13.5" r="3.5"/><path d="M8 7l1.5-3h5L16 7"/></svg>기념사진<small>저장·공유</small></button>
   </div>
-  <div class="row"><button class="ghost" id="snd-toggle">소리 끄기</button><button class="ghost" id="snd-bell">종 한 번 울리기</button><button class="ghost" id="look-toggle">화면 끌기 방향 바꾸기</button><button class="ghost" id="share-btn">경당 주소 복사</button><button class="ghost" id="big-toggle">큰 글씨</button></div>
+  <div class="row"><button class="ghost" id="snd-toggle">소리 끄기</button><button class="ghost" id="snd-bell">종 한 번 울리기</button><button class="ghost" id="look-toggle">화면 끌기 방향 바꾸기</button><button class="ghost" id="share-btn">경당 주소 복사</button><button class="ghost" id="big-toggle">큰 글씨</button><button class="ghost" id="hymn-toggle">성가 끄기</button></div>
+  <p class="muted" id="hymn-now"></p>
   <p class="muted" id="who-list"></p>
   <p class="muted">오른쪽 아래 조이스틱으로 걷고, 바닥을 누르면 그곳으로 걸어가고, 신자석을 누르면 그 자리에 앉습니다. 벽의 성화와 십자가의 길, 성수대·방명록대·종줄·게시판·제대·감실·오르간, 문밖 마당의 성모자상·촛불 봉헌대·그네·미끄럼틀·공, 그리고 돌아다니는 수녀님과 강아지 우주·사과 가까이 가면 아래에 할 수 있는 일이 뜹니다. 자체 주소의 경당에서는 지금 들어와 있는 형제자매가 실제로 보이고, 평화의 인사·촛불·종소리가 서로에게 전해집니다. 화면을 끌면 둘러보고, 오전 6시·정오·오후 6시에는 삼종기도 종이 울립니다.</p>
   <p class="muted">제대 뒤 벽의 성령 비둘기·놋쇠 광선·청동 십자고상과 루르드 성모상은 서초동성당 제대 실황 화면을, 마당의 성모자상은 본당 마당에서 찍은 사진을 그대로 입힌 것입니다. 제대 오른쪽 성모상은 본당 소개 영상(서초동성당2)의 한 장면이며, 벽돌 벽·민트색 카펫·티파니 등·청동 십자가의 길·감실·주례석은 그 영상을 보고 본뜬 것입니다. 왼쪽 성 요셉상과 마당의 예수 성심상은 위키미디어 공용의 CC0(퍼블릭 도메인 기증) 사진입니다.</p>
@@ -398,7 +399,7 @@ body.mass #joy{opacity:.35}
   <div class="sh-head"><div><div class="eyebrow">제대 왼쪽 앞</div><h2>오르간 연주</h2></div><button class="x" data-close>닫기</button></div>
   <p class="muted">건반을 누르면 소리가 납니다. 함께 있는 사람에게도 작게 들립니다. 아래 성가는 저작권이 끝난 선율(가사 없음)입니다.</p>
   <div class="keys" id="organ-keys"></div>
-  <div class="row"><button class="ghost hymn" data-h="silent">고요한 밤 거룩한 밤</button><button class="ghost hymn" data-h="adeste">참 반가운 성도여</button><button class="ghost hymn" data-h="grace">Amazing Grace</button><button class="ghost hymn" data-h="mozart">Ave Verum (모차르트)</button></div>
+  <div class="row"><button class="ghost hymn" data-h="silent">고요한 밤 거룩한 밤</button><button class="ghost hymn" data-h="adeste">참 반가운 성도여</button><button class="ghost hymn" data-h="grace">Amazing Grace</button><button class="ghost hymn" data-h="mozart">Ave Verum (모차르트)</button><button class="ghost hymn" data-h="ode">환희의 송가</button><button class="ghost hymn" data-h="joy">기쁘다 구주 오셨네</button><button class="ghost hymn" data-h="child">What Child Is This</button></div>
 </div>
 
 <!-- 둘러보기 -->
@@ -1710,9 +1711,24 @@ function tryMove(dx, dz){
   if (inZone(x, z + dz)) { myAvatar.position.z = z + dz; return true; }
   return false;
 }
-// 절하기(평화의 인사) 애니메이션
+// 절하기(평화의 인사·성모님께 인사): 허리를 축으로 상체만 앞으로 숙였다가 잠시 머물고 폅니다 (아바타 앞은 -z)
 var bows = [];
-function bow(grp){ bows.push({ g: grp, t0: performance.now(), dur: RM ? 10 : 900 }); }
+function bow(grp){
+  if (!grp || !grp.userData || !grp.userData.upper) return;
+  for (var i = 0; i < bows.length; i++) if (bows[i].g === grp) return; // 이미 절하는 중
+  var base = grp.userData.upper.map(function(m){ return { m: m, y: m.position.y, z: m.position.z, rx: m.rotation.x }; });
+  bows.push({ g: grp, t0: performance.now(), dur: RM ? 10 : 1200, base: base, pose: grp.userData.pose });
+}
+function applyBend(b, th){ // 상체 각 부분을 엉덩이 높이의 축으로 th 만큼 앞으로 회전
+  var off = b.pose === 'sit' ? -0.24 : (b.pose === 'kneel' ? -0.28 : 0), hip = 0.72 + off, c = Math.cos(th), s = Math.sin(th);
+  for (var i = 0; i < b.base.length; i++) { var p = b.base[i], dy = p.y - hip; p.m.position.y = hip + dy * c + p.z * s; p.m.position.z = p.z * c - dy * s; p.m.rotation.x = p.rx - th; }
+}
+function updateBows(){
+  for (var i = bows.length - 1; i >= 0; i--) { var b = bows[i], p = (performance.now() - b.t0) / b.dur;
+    if (p >= 1) { for (var k = 0; k < b.base.length; k++) { var q = b.base[k]; q.m.position.y = q.y; q.m.position.z = q.z; q.m.rotation.x = q.rx; } if (b.g.userData.pose !== b.pose) setPose(b.g, b.g.userData.pose); bows.splice(i, 1); }
+    else { var e = p < 0.4 ? p / 0.4 : p < 0.6 ? 1 : (1 - p) / 0.4; applyBend(b, 0.48 * Math.sin(e * Math.PI / 2)); } // 숙이고 · 잠시 머물고 · 펴기
+  }
+}
 // 성호 긋는 손 (3인칭)
 var hand = null, handT0 = 0;
 var HAND_PATH = [[0, 1.56, -0.19], [0, 1.08, -0.24], [-0.2, 1.3, -0.22], [0.2, 1.3, -0.22], [0, 1.1, -0.24]];
@@ -2046,6 +2062,9 @@ var HYMNS = { // 저작권이 끝난 성가 선율 (가사 없이 선율만): [�
   grace: { name: 'Amazing Grace', bpm: 84, notes: [[-5,1],[0,2],[4,.5],[0,.5],[4,2],[2,1],[0,2],[-3,1],[-5,2],[-5,1],[0,2],[4,.5],[0,.5],[4,2],[2,1],[7,3],[7,2],[4,1],[7,1.5],[4,.5],[0,2],[-3,1],[-5,2],[-5,1],[0,2],[4,.5],[0,.5],[4,2],[2,1],[0,3]] },
   mozart: { name: 'Ave Verum (모차르트)', bpm: 72, notes: [[7,2],[7,2],[11,2],[9,2],[7,1],[9,1],[11,2],[12,2],[11,2],[12,2],[11,2],[9,1],[7,1],[9,2],[7,4],[7,2],[12,2],[11,2],[9,2],[7,1],[9,1],[11,2],[12,2],[11,2],[12,2],[11,2],[9,1],[7,1],[9,2],[7,4]] }
 };
+HYMNS.ode = { name: '환희의 송가 (베토벤)', bpm: 112, notes: [[4,1],[4,1],[5,1],[7,1],[7,1],[5,1],[4,1],[2,1],[0,1],[0,1],[2,1],[4,1],[4,1.5],[2,.5],[2,2],[4,1],[4,1],[5,1],[7,1],[7,1],[5,1],[4,1],[2,1],[0,1],[0,1],[2,1],[4,1],[2,1.5],[0,.5],[0,2],[2,1],[2,1],[4,1],[0,1],[2,1],[4,.5],[5,.5],[4,1],[0,1],[2,1],[4,.5],[5,.5],[4,1],[2,1],[0,1],[2,1],[-5,2],[4,1],[4,1],[5,1],[7,1],[7,1],[5,1],[4,1],[2,1],[0,1],[0,1],[2,1],[4,1],[2,1.5],[0,.5],[0,2]] };
+HYMNS.joy = { name: '기쁘다 구주 오셨네 (Joy to the World)', bpm: 100, notes: [[12,1.5],[11,.5],[9,1],[7,1.5],[5,.5],[4,1],[2,1],[0,1.5],[7,.5],[9,1.5],[9,.5],[11,1.5],[11,.5],[12,2],[12,.5],[12,.5],[11,.5],[9,.5],[7,.75],[7,.25],[5,.5],[4,.5],[12,.5],[12,.5],[11,.5],[9,.5],[7,.75],[7,.25],[5,.5],[4,.5],[4,.5],[4,.5],[4,.5],[4,.5],[5,.5],[7,1.5],[5,.25],[4,.25],[2,.5],[2,.5],[2,.5],[2,.5],[4,.5],[5,1.5],[4,.25],[2,.25],[0,1],[12,1],[9,1],[7,1.5],[5,.5],[4,1],[5,1],[4,1],[2,1],[0,2]] };
+HYMNS.child = { name: 'What Child Is This (그린슬리브즈)', bpm: 150, notes: [[4,1],[7,2],[9,1],[11,1.5],[12,.5],[11,1],[9,2],[6,1],[2,1.5],[4,.5],[6,1],[7,2],[4,1],[4,1.5],[3,.5],[4,1],[6,2],[3,1],[-1,3],[4,1],[7,2],[9,1],[11,1.5],[12,.5],[11,1],[9,2],[6,1],[2,1.5],[4,.5],[6,1],[7,1.5],[6,.5],[4,1],[3,1.5],[1,.5],[3,1],[4,3],[4,2],[14,3],[14,1.5],[12,.5],[11,1],[9,2],[6,1],[2,1.5],[4,.5],[6,1],[7,2],[4,1],[4,1.5],[3,.5],[4,1],[6,2],[3,1],[-1,3],[14,3],[14,1.5],[12,.5],[11,1],[9,2],[6,1],[2,1.5],[4,.5],[6,1],[7,1.5],[6,.5],[4,1],[3,1.5],[1,.5],[3,1],[4,3],[4,2]] };
 var organ = { on: false, timer: null, playing: null, keyEls: [] };
 function organPress(semi, vol, dur, silent){ var f = noteFreq(semi); initAudio(); organNote(f, vol || 0.32, dur || 0.6, !!silent && vol < 0.25); var el = organ.keyEls[semi + 5]; if (el) { el.classList.add('down'); setTimeout(function(){ el.classList.remove('down'); }, Math.max(120, (dur || 0.6) * 600)); } if (!silent) rtSend('organ', { f: Math.round(f * 10) / 10 }); }
 function organStopHymn(){ if (organ.timer) { clearTimeout(organ.timer); organ.timer = null; } organ.playing = null; document.querySelectorAll('.hymn').forEach(function(b){ b.classList.remove('on'); }); }
@@ -2082,6 +2101,45 @@ function stopOrgan(){ if (!organ.on) return; organ.on = false; organStopHymn(); 
   document.querySelectorAll('.hymn').forEach(function(b){ b.addEventListener('click', function(){ var id = b.getAttribute('data-h'); if (organ.playing === id) organStopHymn(); else organPlay(id); }); });
   $('#mo-organ').addEventListener('click', function(){ closeSheets(); startOrgan(); });
 })();
+// ---------- 성가: 경당 안에 오르간 성가가 조용히 울려 퍼집니다 (전례 시기에 맞는 선율 · 한 곡 뒤 잠시 쉬고 다음 곡 · 미사·성체조배·오르간 연주 중엔 멈춤) ----------
+var HYMN_SEASON = { advent: ['grace', 'mozart', 'ode'], christmas: ['silent', 'adeste', 'joy', 'child', 'mozart'], lent: ['grace', 'mozart'], triduum: ['mozart'], easter: ['ode', 'mozart', 'grace'], pentecost: ['ode', 'grace', 'mozart'], ordinary: ['grace', 'mozart', 'ode'] };
+var AMB = { on: store('chapel-hymns') !== false, playing: null, timer: null, nextAt: 0, bus: null, last: null };
+function ambBus(){ // 성가 전용 출력: 되먹임 지연으로 긴 잔향을 흉내내 성당처럼 울리게
+  if (AMB.bus || !actx || !master) return AMB.bus;
+  var g = actx.createGain(); g.gain.value = 1; var dl = actx.createDelay(1.0); dl.delayTime.value = 0.29; var fb = actx.createGain(); fb.gain.value = 0.42; var lp = actx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1500; var wet = actx.createGain(); wet.gain.value = 0.55;
+  g.connect(master); g.connect(dl); dl.connect(lp); lp.connect(fb); fb.connect(dl); lp.connect(wet); wet.connect(master);
+  AMB.bus = { g: g }; return AMB.bus;
+}
+function ambNote(freq, vol, dur){ // organNote 와 같은 음색을 성가 버스로
+  var bus = ambBus(); if (!bus || !soundOn || !freq) return;
+  var t = actx.currentTime, g = actx.createGain();
+  g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol, t + 0.07); g.gain.setValueAtTime(vol, t + Math.max(0.08, dur - 0.1)); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.4);
+  var lp = actx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1600; g.connect(lp); lp.connect(bus.g);
+  [[1, 'sine', 0.5], [2, 'sine', 0.2], [3, 'sine', 0.08], [0.5, 'sine', 0.18]].forEach(function(h){ var o = actx.createOscillator(); o.type = h[1]; o.frequency.value = freq * h[0]; var og = actx.createGain(); og.gain.value = h[2]; o.connect(og); og.connect(g); o.start(t); o.stop(t + dur + 0.5); });
+}
+function ambList(){ var s = (typeof LIT !== 'undefined' && LIT && LIT.season) || 'ordinary'; return (HYMN_SEASON[s] || HYMN_SEASON.ordinary).filter(function(k){ return HYMNS[k]; }); }
+function ambBusy(){ return !AMB.on || !soundOn || !entered || document.hidden || mode === 'mass' || organ.on || !!organ.playing || !!pad || (typeof TOUR !== 'undefined' && TOUR.on); }
+function ambGain(){ // 오르간(제대 왼쪽)에서 멀수록 작게, 마당에서는 문틈으로 새어 나오듯 더 작게
+  var d = Math.hypot(myAvatar.position.x + 3.8, myAvatar.position.z + 9.1), out = myAvatar.position.z > 15;
+  return (out ? 0.3 : 1) * Math.max(0.5, Math.min(1, 1.15 - d / 30));
+}
+function ambPlay(id){
+  var h = HYMNS[id]; if (!h) return; initAudio(); if (!ambBus()) return;
+  ambStop(true); AMB.playing = id; AMB.last = id; var beat = 60000 / h.bpm, i = 0;
+  if (!anySheetOpen()) toast('♪ ' + h.name, 2400); ambLabel();
+  (function step(){ if (AMB.playing !== id) return; var n = h.notes[i]; if (!n) { AMB.playing = null; AMB.timer = null; AMB.nextAt = Date.now() + 100000 + Math.random() * 60000; ambLabel(); return; }
+    ambNote(noteFreq(n[0]), 0.11 * ambGain(), n[1] * beat / 1000 * 0.92); i++; AMB.timer = setTimeout(step, n[1] * beat); })();
+}
+function ambStop(quiet){ if (AMB.timer) { clearTimeout(AMB.timer); AMB.timer = null; } if (AMB.playing) { AMB.playing = null; if (!quiet) AMB.nextAt = Date.now() + 40000; } ambLabel(); }
+function ambNext(){ var l = ambList(); if (!l.length) return; var pick = l.filter(function(k){ return k !== AMB.last; }); ambPlay(pick.length ? pick[Math.floor(Math.random() * pick.length)] : l[0]); }
+function ambLabel(){ var el = $('#hymn-now'), b = $('#hymn-toggle'); if (b) b.textContent = AMB.on ? '성가 끄기' : '성가 켜기'; if (!el) return; el.hidden = !AMB.on; el.textContent = !AMB.on ? '' : AMB.playing ? '지금 흐르는 성가: ' + HYMNS[AMB.playing].name : '성가는 한 곡이 끝나면 잠시 쉬었다가 다시 흐릅니다. 미사 모드·성체조배·오르간 연주 중에는 멈춥니다.'; }
+function setHymns(on){ AMB.on = !!on; store('chapel-hymns', !!on); if (!on) ambStop(true); else AMB.nextAt = Math.min(AMB.nextAt || Date.now(), Date.now() + 1500); ambLabel(); }
+setInterval(function(){
+  if (AMB.playing) { if (ambBusy()) ambStop(); return; }
+  if (AMB.nextAt && !ambBusy() && Date.now() >= AMB.nextAt) ambNext();
+}, 1000);
+if ($('#hymn-toggle')) $('#hymn-toggle').addEventListener('click', function(){ initAudio(); setHymns(!AMB.on); });
+ambLabel();
 // ---------- 마당 놀이: 공 던지기 (가까운 강아지가 물어옵니다) ----------
 var BALL = { m: null, x: 1.6, z: 24.6, y: 0.11, flying: false, held: null, t: 0, dur: 1.1, bounce: 0, x0: 0, z0: 0, tx: 0, tz: 0 };
 (function buildBall(){ var m = mesh(new THREE.SphereGeometry(0.11, 14, 10), new THREE.MeshStandardMaterial({ color: 0xd94b3a, roughness: 0.55 }), BALL.x, 0.11, BALL.z, 'ball'); var stripe = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.016, 6, 24), M.white); stripe.rotation.x = Math.PI / 2; m.add(stripe); BALL.m = m; })();
@@ -2339,7 +2397,7 @@ function frame(){
     if (mag > 0.05) { mv.normalize(); var sp = 2.0 * ease * dt; if (tryMove(mv.x * sp, mv.z * sp)) { moving = true; if (view === 'third') state.facing = Math.atan2(-mv.x, -mv.z); if (!RM) myAvatar.position.y = Math.abs(Math.sin(t * 10)) * 0.035 * ease; } }
   } else if (myAvatar.position.y !== 0 && !state.seated && !ride) myAvatar.position.y = 0;
   if (moving) { stepT += dt; if (stepT > 0.46) { stepT = 0; footstep(myAvatar.position.z > 15); } } else stepT = 0.3;
-  for (var bi2 = bows.length - 1; bi2 >= 0; bi2--) { var bw = bows[bi2], bp = (performance.now() - bw.t0) / bw.dur; if (bp >= 1) { bw.g.rotation.x = 0; bows.splice(bi2, 1); } else bw.g.rotation.x = Math.sin(bp * Math.PI) * 0.42; }
+  updateBows();
   updateHand(); updateFX(dt); updateRide(dt); updateSister(dt); updateDogs(dt); updateBall(dt); updatePeers(dt); rtTrack(false);
 
   // facing smoothing
@@ -2664,8 +2722,8 @@ function rtInit(){
     ch.on('presence', { event: 'sync' }, function(){ rtSync(ch.presenceState()); });
     ch.on('broadcast', { event: 'emote' }, function(m){ rtEmote(m.payload || {}); });
     ch.subscribe(function(status){
-      if (status === 'SUBSCRIBED') { RT.on = true; RT.lastKey = ''; rtTrack(true); rtStatus(); }
-      else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') { RT.on = false; rtStatus(); }
+      if (status === 'SUBSCRIBED') { RT.on = true; RT.err = null; RT.lastKey = ''; rtTrack(true); rtStatus(); }
+      else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') { RT.on = false; RT.err = status; rtStatus(); }
     });
     RT.ch = ch;
   } catch (e) { RT.on = false; }
@@ -2700,9 +2758,9 @@ function rtSync(stateMap){ // (v11) 들어와 있는 사람은 모두 세되, �
     peer.tx = p.x; peer.tz = p.z; peer.f = p.f || 0;
     if (seat >= 0 && seats[seat]) { var s = seats[seat]; peer.tx = s.x; peer.tz = pose === 'kneel' ? s.z - 0.42 : s.z; peer.f = 0; }
     if (pose !== peer.pose) { peer.pose = pose; if (peer.g) setPose(peer.g, pose); }
-    peer.seat = seat;
+    rtSeat(peer, seat);
   });
-  Object.keys(RT.peers).forEach(function(key){ if (!seen[key]) { rtUndraw(RT.peers[key]); delete RT.peers[key]; } });
+  Object.keys(RT.peers).forEach(function(key){ if (!seen[key]) { rtUndraw(RT.peers[key]); rtSeat(RT.peers[key], -1); delete RT.peers[key]; } });
   rtDraw(true);
   if (joined.length) toast(joined.slice(0, 2).join(', ') + (joined.length > 2 ? ' 외 ' + (joined.length - 2) + '명' : '') + '님이 경당에 들어왔습니다.', 2600);
   RT.synced = true; rtStatus();
@@ -2721,12 +2779,18 @@ function rtDraw(force){ // 가까운 순으로 RT.maxDrawn 명만 그립니다. 
   var keep = {}; ranked.forEach(function(r, i){ if (i < RT.maxDrawn || (r.p.g && i < RT.maxDrawn + 6)) keep[r.p.key] = true; }); // 경계에 걸친 사람이 깜빡이지 않도록 이미 그린 사람은 6명까지 여유
   ranked.forEach(function(r){ if (keep[r.p.key]) { if (!r.p.g) rtDrawPeer(r.p); } else rtUndraw(r.p); });
 }
+function rtSeat(peer, seat){ // 다른 사람이 앉은 자리는 비어 있지 않게 표시해 같은 자리에 겹쳐 앉지 않도록 (그 자리의 가상 신자는 비켜 줍니다)
+  if (peer.seat === seat) return;
+  if (peer.seat >= 0 && seats[peer.seat] && seats[peer.seat].peer === peer.key) { seats[peer.seat].taken = false; seats[peer.seat].peer = null; }
+  peer.seat = seat;
+  if (seat >= 0 && seats[seat] && !(state.seated && seats[seat] === mySeat)) { var s = seats[seat]; if (s.av) { var npc = null; avatars = avatars.filter(function(a){ if (a.s === s) { npc = a; return false; } return true; }); if (npc) scene.remove(npc.g); s.av = null; } s.taken = true; s.peer = peer.key; }
+}
 function rtHidden(){ var n = 0; Object.keys(RT.peers).forEach(function(k){ if (!RT.peers[k].g) n++; }); return n; }
 function rtCount(){ return Object.keys(RT.peers).length + 1; }
 function rtStatus(){
   var el = $('#presence-n'), sm = $('#presence small');
   if (RT.on) { var hid = rtHidden(); el.textContent = rtCount() + '명이 함께 있어요'; if (sm) sm.textContent = hid ? '실시간 · 가까운 ' + (rtCount() - 1 - hid) + '명만 보임' : '실시간'; $('#presence').title = '지금 이 경당에 들어와 있는 사람'; }
-  else if (SHARED) { el.textContent = presence + '명이 함께 있어요'; if (sm) sm.textContent = '연결 중'; }
+  else if (SHARED) { el.textContent = presence + '명이 함께 있어요'; if (sm) sm.textContent = RT.err ? '연결 끊김' : '연결 중'; $('#presence').title = RT.err ? '함께 있기 연결이 끊겼습니다(접속이 많거나 네트워크 문제). 경당은 그대로 쓸 수 있고, 잠시 뒤 다시 이어집니다.' : '함께 있기에 연결하는 중'; }
 }
 function rtNames(){ return Object.keys(RT.peers).map(function(k){ return RT.peers[k].name; }); }
 function updatePeers(dt){ // (v11) 그려진 사람만 움직입니다. 1초마다 누구를 그릴지 다시 고릅니다
@@ -2862,7 +2926,7 @@ myAvatar.position.set(0, 0, 13.4); state.facing = 0; setPose(myAvatar, 'stand');
 camPos.set(0, 2.1, 16.4); camLook.set(0, 1.15, 13.4);
 evalMode();
 $('#enter').addEventListener('click', function(){
-  initAudio(); setSound(true); entered = true; rtInit(); recordVisit();
+  initAudio(); setSound(true); entered = true; rtInit(); recordVisit(); AMB.nextAt = Date.now() + 18000; // 들어오고 18초 뒤 첫 성가
   if (mode !== 'mass' && !store('chapel-toured')) setTimeout(function(){ if (!anySheetOpen() && !state.special) openSheet('tour'); }, 2600);
   var g = $('#gate'); g.classList.add('away'); setTimeout(function(){ g.hidden = true; }, 700);
   bell(0.35);
@@ -2870,7 +2934,7 @@ $('#enter').addEventListener('click', function(){
   else { setTimeout(function(){ toast('바닥을 누르면 그곳으로 걸어갑니다. 금빛 점 가까이 가면 할 수 있는 일이 뜹니다.', 4200); }, 1200); }
 });
 loadGuest();
-window.__chapelDebug = { rtDraw: rtDraw, rtHidden: rtHidden, visits: VISITS, countVisits: countVisits, recordVisit: recordVisit, setBig: setBig, padStart: padStart, padStop: padStop, pickGreet: pickGreet, renderCandleNotes: renderCandleNotes, candleCards: candleCards, loadNotices: loadNotices, notices: function(){ return NOTICES; }, rt: RT, rtSync: rtSync, rtEmote: rtEmote, tour: TOUR, tourStart: tourStart, quizStart: quizStart, throwBall: throwBall, ball: BALL, startOrgan: startOrgan, organPlay: organPlay, liturgy: liturgy, LIT: LIT, sharePhoto: sharePhoto, snapshot: snapshot, nextMass: nextMass, billboards: billboards, realImg: REAL_IMG, scene: scene, camera: camera, THREE: THREE, interact: interact, walkTo: walkTo, goSit: goSit, peace: peace, ride: { swing: rideSwing, slide: rideSlide, end: endRide }, dogs: dogs, sister: sister, openArt: openArt, openStation: openStation, petDog: petDog, meetSister: meetSister, openAngelus: openAngelus, photo: function(px, py, pz, lx, ly, lz){ beginSpecial('photo', new THREE.Vector3(px, py, pz), new THREE.Vector3(lx, ly, lz)); camPos.set(px, py, pz); camLook.set(lx, ly, lz); }, photoEnd: endSpecial, fx: { dove: fxDove, petals: fxPetals, halo: fxHalo, sparkle: fxSparkle }, obj: OBJ, inZone: inZone, signCross: signCross, amen: amen, daylight: function(d){ skyNight.material.opacity = 1 - d; sun.intensity = 0.12 + 0.75 * d; hemi.intensity = 0.45 + 0.5 * d; scene.fog.color.copy(FOG_NIGHT).lerp(FOG_DAY, d); scene.background.copy(FOG_NIGHT).lerp(FOG_DAY, d); windowMats.forEach(function(m){ m.color.setScalar(0.55 + 0.7 * d); }); glassPatches.forEach(function(p){ p.material.opacity = 0.42 * d; }); }, teleport: function(x, z, tx, tz){ walker = null; if (state.seated) leaveSeat(); myAvatar.position.set(x, 0, z); if (tx !== undefined) { faceTo(tx, tz); myAvatar.rotation.y = state.facing; } var w = desiredCamera(); camPos.copy(w.pos); camLook.copy(w.look); }, snapCam: function(){ var w = desiredCamera(); camPos.copy(w.pos); camLook.copy(w.look); }, setJoy: function(x, y){ joy.x = x; joy.y = y; joy.active = !!(x || y); }, openSheet: openSheet, closeSheets: closeSheets, seats: seats, setView: setView, state: function(){ return { mode: mode, seated: state.seated, posture: state.posture, special: state.special, pos: [myAvatar.position.x, myAvatar.position.z], walking: !!walker, view: view, near: nearObj(), candles: rackSlots.filter(function(s){ return s.used; }).length, ride: ride ? ride.kind : null, fx: FX.length }; } };
+window.__chapelDebug = { amb: AMB, ambPlay: ambPlay, ambStop: ambStop, ambNext: ambNext, setHymns: setHymns, bow: bow, bows: bows, rtSeat: rtSeat, hymns: HYMNS, rtDraw: rtDraw, rtHidden: rtHidden, visits: VISITS, countVisits: countVisits, recordVisit: recordVisit, setBig: setBig, padStart: padStart, padStop: padStop, pickGreet: pickGreet, renderCandleNotes: renderCandleNotes, candleCards: candleCards, loadNotices: loadNotices, notices: function(){ return NOTICES; }, rt: RT, rtSync: rtSync, rtEmote: rtEmote, tour: TOUR, tourStart: tourStart, quizStart: quizStart, throwBall: throwBall, ball: BALL, startOrgan: startOrgan, organPlay: organPlay, liturgy: liturgy, LIT: LIT, sharePhoto: sharePhoto, snapshot: snapshot, nextMass: nextMass, billboards: billboards, realImg: REAL_IMG, scene: scene, camera: camera, THREE: THREE, interact: interact, walkTo: walkTo, goSit: goSit, peace: peace, ride: { swing: rideSwing, slide: rideSlide, end: endRide }, dogs: dogs, sister: sister, openArt: openArt, openStation: openStation, petDog: petDog, meetSister: meetSister, openAngelus: openAngelus, photo: function(px, py, pz, lx, ly, lz){ beginSpecial('photo', new THREE.Vector3(px, py, pz), new THREE.Vector3(lx, ly, lz)); camPos.set(px, py, pz); camLook.set(lx, ly, lz); }, photoEnd: endSpecial, fx: { dove: fxDove, petals: fxPetals, halo: fxHalo, sparkle: fxSparkle }, obj: OBJ, inZone: inZone, signCross: signCross, amen: amen, daylight: function(d){ skyNight.material.opacity = 1 - d; sun.intensity = 0.12 + 0.75 * d; hemi.intensity = 0.45 + 0.5 * d; scene.fog.color.copy(FOG_NIGHT).lerp(FOG_DAY, d); scene.background.copy(FOG_NIGHT).lerp(FOG_DAY, d); windowMats.forEach(function(m){ m.color.setScalar(0.55 + 0.7 * d); }); glassPatches.forEach(function(p){ p.material.opacity = 0.42 * d; }); }, teleport: function(x, z, tx, tz){ walker = null; if (state.seated) leaveSeat(); myAvatar.position.set(x, 0, z); if (tx !== undefined) { faceTo(tx, tz); myAvatar.rotation.y = state.facing; } var w = desiredCamera(); camPos.copy(w.pos); camLook.copy(w.look); }, snapCam: function(){ var w = desiredCamera(); camPos.copy(w.pos); camLook.copy(w.look); }, setJoy: function(x, y){ joy.x = x; joy.y = y; joy.active = !!(x || y); }, openSheet: openSheet, closeSheets: closeSheets, seats: seats, setView: setView, state: function(){ return { mode: mode, seated: state.seated, posture: state.posture, special: state.special, pos: [myAvatar.position.x, myAvatar.position.z], walking: !!walker, view: view, near: nearObj(), candles: rackSlots.filter(function(s){ return s.used; }).length, ride: ride ? ride.kind : null, fx: FX.length }; } };
 })();
 </script>
 
