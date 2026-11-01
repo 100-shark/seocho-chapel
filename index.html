@@ -2863,7 +2863,9 @@ function rtRestWrite(force){
   var q = rtPayload(), p = { id: q.id, name: q.n, x: q.x, z: q.z, f: q.f, p: q.p, s: q.s, c: Object.assign({ ws: RT.on ? 1 : 0 }, q.c) }, k = JSON.stringify(p), now = Date.now();
   if (!force) { if (k === RTR.lastKey) { if (now - RTR.lastSent < 15000) return; } else if (!rtRestFast() && now - RTR.lastSent < 15000) return; } // 그대로면 15초마다, 바뀌면 바로(느린 모드에선 15초마다)
   RTR.lastKey = k; RTR.lastSent = now;
-  sbFetch('presence?on_conflict=id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(p) }).catch(function(){});
+  sbFetch('presence?on_conflict=id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(p) })
+    .then(function(r){ if ((r.status === 401 || r.status === 403) && !RT.on) { RT.id = 'p' + Math.random().toString(36).slice(2, 10); store('chapel-rtid', RT.id); RTR.lastKey = ''; } }) // 내 옛 줄을 못 고치는 경우(정책) 새 번호로 다시
+    .catch(function(){});
 }
 function rtRestRead(){
   if (!SHARED || !entered) return Promise.resolve(); if (!RT.id) RT.id = rtId();
