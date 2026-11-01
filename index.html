@@ -2114,25 +2114,26 @@ function ambNote(freq, vol, dur){ // organNote 와 같은 음색을 성가 버�
   var bus = ambBus(); if (!bus || !soundOn || !freq) return;
   var t = actx.currentTime, g = actx.createGain();
   g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol, t + 0.07); g.gain.setValueAtTime(vol, t + Math.max(0.08, dur - 0.1)); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.4);
-  var lp = actx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1600; g.connect(lp); lp.connect(bus.g);
-  [[1, 'sine', 0.5], [2, 'sine', 0.2], [3, 'sine', 0.08], [0.5, 'sine', 0.18]].forEach(function(h){ var o = actx.createOscillator(); o.type = h[1]; o.frequency.value = freq * h[0]; var og = actx.createGain(); og.gain.value = h[2]; o.connect(og); og.connect(g); o.start(t); o.stop(t + dur + 0.5); });
+  var lp = actx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2400; g.connect(lp); lp.connect(bus.g);
+  // 배음을 넉넉히: 휴대폰 스피커는 낮은 음을 거의 못 내므로
+  [[1, 'sine', 0.45], [2, 'sine', 0.3], [3, 'sine', 0.16], [4, 'triangle', 0.07], [0.5, 'sine', 0.12]].forEach(function(h){ var o = actx.createOscillator(); o.type = h[1]; o.frequency.value = freq * h[0]; var og = actx.createGain(); og.gain.value = h[2]; o.connect(og); og.connect(g); o.start(t); o.stop(t + dur + 0.5); });
 }
 function ambList(){ var s = (typeof LIT !== 'undefined' && LIT && LIT.season) || 'ordinary'; return (HYMN_SEASON[s] || HYMN_SEASON.ordinary).filter(function(k){ return HYMNS[k]; }); }
 function ambBusy(){ return !AMB.on || !soundOn || !entered || document.hidden || mode === 'mass' || organ.on || !!organ.playing || !!pad || (typeof TOUR !== 'undefined' && TOUR.on); }
 function ambGain(){ // 오르간(제대 왼쪽)에서 멀수록 작게, 마당에서는 문틈으로 새어 나오듯 더 작게
   var d = Math.hypot(myAvatar.position.x + 3.8, myAvatar.position.z + 9.1), out = myAvatar.position.z > 15;
-  return (out ? 0.3 : 1) * Math.max(0.5, Math.min(1, 1.15 - d / 30));
+  return (out ? 0.4 : 1) * Math.max(0.65, Math.min(1, 1.15 - d / 30));
 }
 function ambPlay(id){
   var h = HYMNS[id]; if (!h) return; initAudio(); if (!ambBus()) return;
-  ambStop(true); AMB.playing = id; AMB.last = id; var beat = 60000 / h.bpm, i = 0;
-  if (!anySheetOpen()) toast('♪ ' + h.name, 2400); ambLabel();
-  (function step(){ if (AMB.playing !== id) return; var n = h.notes[i]; if (!n) { AMB.playing = null; AMB.timer = null; AMB.nextAt = Date.now() + 100000 + Math.random() * 60000; ambLabel(); return; }
-    ambNote(noteFreq(n[0]), 0.11 * ambGain(), n[1] * beat / 1000 * 0.92); i++; AMB.timer = setTimeout(step, n[1] * beat); })();
+  ambStop(true); var first = !AMB.last; AMB.playing = id; AMB.last = id; var beat = 60000 / h.bpm, i = 0;
+  if (!anySheetOpen()) toast('♪ ' + h.name + (first ? ' · 성가는 더보기에서 끌 수 있어요' : ''), first ? 3600 : 2400); ambLabel();
+  (function step(){ if (AMB.playing !== id) return; var n = h.notes[i]; if (!n) { AMB.playing = null; AMB.timer = null; AMB.nextAt = Date.now() + 40000 + Math.random() * 30000; ambLabel(); return; }
+    ambNote(noteFreq(n[0]), 0.22 * ambGain(), n[1] * beat / 1000 * 0.92); i++; AMB.timer = setTimeout(step, n[1] * beat); })();
 }
 function ambStop(quiet){ if (AMB.timer) { clearTimeout(AMB.timer); AMB.timer = null; } if (AMB.playing) { AMB.playing = null; if (!quiet) AMB.nextAt = Date.now() + 40000; } ambLabel(); }
 function ambNext(){ var l = ambList(); if (!l.length) return; var pick = l.filter(function(k){ return k !== AMB.last; }); ambPlay(pick.length ? pick[Math.floor(Math.random() * pick.length)] : l[0]); }
-function ambLabel(){ var el = $('#hymn-now'), b = $('#hymn-toggle'); if (b) b.textContent = AMB.on ? '성가 끄기' : '성가 켜기'; if (!el) return; el.hidden = !AMB.on; el.textContent = !AMB.on ? '' : AMB.playing ? '지금 흐르는 성가: ' + HYMNS[AMB.playing].name : '성가는 한 곡이 끝나면 잠시 쉬었다가 다시 흐릅니다. 미사 모드·성체조배·오르간 연주 중에는 멈춥니다.'; }
+function ambLabel(){ var el = $('#hymn-now'), b = $('#hymn-toggle'); if (b) b.textContent = AMB.on ? '성가 끄기' : '성가 켜기'; if (!el) return; el.hidden = !AMB.on; el.textContent = !AMB.on ? '' : AMB.playing ? '지금 흐르는 성가: ' + HYMNS[AMB.playing].name : '성가는 한 곡이 끝나면 1분쯤 쉬었다가 다시 흐릅니다. 미사 모드·성체조배·오르간 연주 중에는 멈춥니다. 소리가 안 나면 기기 무음 스위치와 음량을 확인하세요.'; }
 function setHymns(on){ AMB.on = !!on; store('chapel-hymns', !!on); if (!on) ambStop(true); else AMB.nextAt = Math.min(AMB.nextAt || Date.now(), Date.now() + 1500); ambLabel(); }
 setInterval(function(){
   if (AMB.playing) { if (ambBusy()) ambStop(); return; }
@@ -2926,7 +2927,7 @@ myAvatar.position.set(0, 0, 13.4); state.facing = 0; setPose(myAvatar, 'stand');
 camPos.set(0, 2.1, 16.4); camLook.set(0, 1.15, 13.4);
 evalMode();
 $('#enter').addEventListener('click', function(){
-  initAudio(); setSound(true); entered = true; rtInit(); recordVisit(); AMB.nextAt = Date.now() + 18000; // 들어오고 18초 뒤 첫 성가
+  initAudio(); setSound(true); entered = true; rtInit(); recordVisit(); AMB.nextAt = Date.now() + 6000; // 들어오고 6초 뒤 첫 성가
   if (mode !== 'mass' && !store('chapel-toured')) setTimeout(function(){ if (!anySheetOpen() && !state.special) openSheet('tour'); }, 2600);
   var g = $('#gate'); g.classList.add('away'); setTimeout(function(){ g.hidden = true; }, 700);
   bell(0.35);
