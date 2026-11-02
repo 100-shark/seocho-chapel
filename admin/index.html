@@ -28,6 +28,9 @@ input:focus,textarea:focus{border-color:var(--accent)}textarea{min-height:90px;r
 .badge{display:inline-block;font-size:11.5px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);margin-left:6px}.badge.p{color:var(--accent);border-color:rgba(226,169,75,.4)}
 .msg{font-size:13.5px;color:var(--accent);min-height:20px;margin:6px 0 0}.msg.err{color:#ff8a86}
 label.chk{display:inline-flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}label.chk input{width:auto;margin:0}
+.bar{display:grid;grid-template-columns:84px 1fr 44px;gap:8px;align-items:center;font-size:13px;margin:4px 0}.bar i{display:block;height:10px;background:var(--accent);border-radius:5px;min-width:2px}.bar span{color:var(--muted);text-align:right}.bar span.l{text-align:left;color:var(--fg)}
+.hours{display:grid;grid-template-columns:repeat(24,1fr);gap:2px;align-items:end;height:70px;margin-top:6px}.hours i{display:block;background:var(--accent);border-radius:2px 2px 0 0;min-height:1px}.hours-l{display:grid;grid-template-columns:repeat(24,1fr);font-size:9px;color:var(--muted);text-align:center}
+pre{white-space:pre-wrap;font-size:11.5px;background:rgba(0,0,0,.35);padding:10px;border-radius:10px;line-height:1.45}details summary{cursor:pointer}
 [hidden]{display:none!important}
 </style>
 </head>
@@ -58,7 +61,7 @@ label.chk{display:inline-flex;align-items:center;gap:8px;font-size:14px;cursor:p
       <div class="stat"><b id="st-intent">–</b><span>기도 지향</span></div>
       <div class="stat"><b id="st-visits">–</b><span>오늘 방문</span></div>
     </div>
-    <div class="tabs"><button class="on" data-tab="guest">방명록 검수</button><button data-tab="intent">기도 지향</button><button data-tab="candle">촛불 지향</button><button data-tab="notice">공지</button><button data-tab="set">설정</button></div>
+    <div class="tabs"><button class="on" data-tab="guest">방명록 검수</button><button data-tab="intent">기도 지향</button><button data-tab="candle">촛불 지향</button><button data-tab="notice">공지</button><button data-tab="stats">통계</button><button data-tab="set">설정</button></div>
 
     <div class="card tab" id="tab-guest">
       <h2>검수 대기 <span class="badge" id="gb-pend-n"></span></h2>
@@ -88,6 +91,20 @@ label.chk{display:inline-flex;align-items:center;gap:8px;font-size:14px;cursor:p
       <p class="msg" id="nt-msg"></p>
       <h2 style="margin-top:18px">올린 공지</h2>
       <div id="nt-list"></div>
+    </div>
+
+    <div class="card tab" id="tab-stats" hidden>
+      <h2>지금 경당에 <b id="sx-now">–</b>명</h2>
+      <p class="muted">최근 2분 안에 움직임이 있는 접속(함께 있기 표 기준). 실시간 연결만 쓰는 사람도 표에 적으므로 모두 셉니다.</p>
+      <h2 style="margin-top:18px">최근 28일 방문 <span class="badge" id="sx-total"></span></h2>
+      <p class="muted">하루에 기기당 한 번 세는 방문입니다(들어오기 버튼 기준).</p>
+      <div id="sx-days"></div>
+      <h2 style="margin-top:18px">시간대별 방문 (28일)</h2>
+      <div id="sx-hours" class="hours"></div><div id="sx-hours-l" class="hours-l"></div>
+      <h2 style="margin-top:18px">기능 사용 (최근 7일) <span class="badge">익명</span></h2>
+      <p class="muted">어떤 기능이 쓰이는지 종류와 시각만 모읍니다. 이름·기기·위치는 없습니다. 한 접속에서 같은 기능은 10분에 한 번만 셉니다.</p>
+      <div id="sx-events"></div>
+      <details id="sx-events-sql" hidden><summary class="muted">집계 표(events)가 아직 없습니다 — 만드는 SQL 보기 (Supabase SQL Editor에서 한 번 실행)</summary><pre id="sx-sql"></pre></details>
     </div>
 
     <div class="card tab" id="tab-set" hidden>
@@ -127,7 +144,33 @@ function start(session){
   $('#login').hidden = true; $('#app').hidden = false; $('#who').textContent = session.user.email;
   sb.from('staff').select('email,name').then(function(r){ var rows = r.data || []; isStaff = rows.some(function(s){ return s.email.toLowerCase() === session.user.email.toLowerCase(); }); $('#staff-warn').hidden = isStaff; $('#staff-list').textContent = rows.length ? rows.map(function(s){ return (s.name ? s.name + ' ' : '') + s.email; }).join(' · ') : '(담당자 목록을 읽을 권한이 없습니다)'; if (isStaff) refreshAll(); });
 }
-function refreshAll(){ loadStats(); loadGuest(); loadIntent(); loadCandles(); loadNotices(); }
+function refreshAll(){ loadStats(); loadGuest(); loadIntent(); loadCandles(); loadNotices(); loadStatsX(); }
+// (v22) 통계 탭: 지금 접속(presence 2분) · 28일 방문(visits) · 시간대 · 기능 사용(events 표, 없으면 SQL 안내)
+var EV_NAMES = { enter: '들어옴 (3D)', enter_simple: '들어옴 (간단 모드)', simple_on: '간단 모드 켬', sheet_prayers: '기도서', sheet_rosary: '묵주기도 창', rosary: '묵주기도 한 단', sheet_candle: '촛불 창', candle: '촛불 올림', sheet_guest: '방명록 창', note: '방명록 남김', sheet_intention: '기도 지향 창', pray: '함께 기도 누름', sheet_live: '생중계', sheet_notice: '안내·공지', sheet_angelus: '삼종기도', sheet_quiz: '퀴즈 창', quiz: '퀴즈 시작', sheet_confess: '양심 성찰', sheet_art: '성화 창', art: '성화 열기', sheet_station: '십자가의 길 창', station: '십자가의 길 열기', sheet_me: '내 모습', sheet_music: '미사곡', sheet_saint: '성인 이야기', sheet_adore: '성체조배 창', adore: '성체조배', peace: '평화의 인사', amen: '아멘', cross: '성호', bell: '종 울림', cafe: '카페 주문', bow: '성모님께 인사', organ: '오르간', hymn: '성가 연주', creche: '구유 경배', photo: '기념사진', tour: '둘러보기', sheet_cafe: '카페 주문 창', sheet_creche: '구유 창', sheet_organ: '오르간 창', sheet_sister: '수녀님', sheet_pray: '제대 기도', sheet_prayers_voice: '', sheet_photo: '사진' };
+var EV_SQL = "create table if not exists public.events (\n  id bigint generated always as identity primary key,\n  kind text not null check (char_length(kind) <= 24),\n  created_at timestamptz not null default now()\n);\nalter table public.events enable row level security;\ngrant insert on public.events to anon, authenticated;\ngrant select, delete on public.events to authenticated;\ncreate index if not exists events_created_at_idx on public.events (created_at);\ndo $$ begin\n  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'events' and policyname = 'anyone inserts events') then\n    create policy \"anyone inserts events\" on public.events for insert to anon, authenticated with check (char_length(kind) <= 24);\n  end if;\n  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'events' and policyname = 'staff reads events') then\n    create policy \"staff reads events\" on public.events for select to authenticated using (is_staff());\n  end if;\n  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'events' and policyname = 'staff deletes events') then\n    create policy \"staff deletes events\" on public.events for delete to authenticated using (is_staff());\n  end if;\nend $$;";
+function evName(k){ return EV_NAMES[k] || k; }
+function bars(el, rows, lab){ el.innerHTML = ''; var max = rows.reduce(function(m, r){ return Math.max(m, r[1]); }, 0) || 1;
+  rows.forEach(function(r){ var d = document.createElement('div'); d.className = 'bar'; d.innerHTML = '<span class="l">' + esc(lab ? lab(r[0]) : r[0]) + '</span><i style="width:' + Math.round(r[1] / max * 100) + '%"></i><span>' + r[1] + '</span>'; el.appendChild(d); });
+  if (!rows.length) el.innerHTML = '<p class="muted">아직 자료가 없습니다.</p>'; }
+function loadStatsX(){
+  var pre = $('#sx-sql'); if (pre) pre.textContent = EV_SQL;
+  sb.from('presence').select('id', { count: 'exact', head: true }).gte('updated_at', new Date(Date.now() - 2 * 60000).toISOString()).neq('p', 'gone').then(function(r){ $('#sx-now').textContent = r.count == null ? '–' : r.count; });
+  var from = new Date(); from.setHours(0, 0, 0, 0); from = new Date(from.getTime() - 27 * 86400000);
+  sb.from('visits').select('created_at').gte('created_at', from.toISOString()).order('created_at', { ascending: true }).limit(20000).then(function(r){
+    if (r.error) { $('#sx-days').innerHTML = '<p class="msg err">불러오지 못했습니다: ' + esc(r.error.message) + '</p>'; return; }
+    var rows = r.data || [], byDay = {}, byHour = [], order = []; for (var h = 0; h < 24; h++) byHour.push(0);
+    for (var i = 0; i < 28; i++) { var d = new Date(from.getTime() + i * 86400000), k = (d.getMonth() + 1) + '/' + d.getDate(); byDay[k] = 0; order.push(k); }
+    rows.forEach(function(v){ var d = new Date(v.created_at), k = (d.getMonth() + 1) + '/' + d.getDate(); if (k in byDay) byDay[k]++; byHour[d.getHours()]++; });
+    $('#sx-total').textContent = rows.length + '명'; bars($('#sx-days'), order.map(function(k){ return [k, byDay[k]]; }).reverse());
+    var hmax = Math.max.apply(null, byHour) || 1, el = $('#sx-hours'), lb = $('#sx-hours-l'); el.innerHTML = ''; lb.innerHTML = '';
+    byHour.forEach(function(n, hh){ var b = document.createElement('i'); b.style.height = Math.max(1, Math.round(n / hmax * 68)) + 'px'; b.title = hh + '시 ' + n + '명'; el.appendChild(b); var s = document.createElement('span'); s.textContent = hh % 3 === 0 ? hh : ''; lb.appendChild(s); });
+  });
+  sb.from('events').select('kind').gte('created_at', new Date(Date.now() - 7 * 86400000).toISOString()).limit(20000).then(function(r){
+    if (r.error) { $('#sx-events').innerHTML = '<p class="muted">집계 표가 아직 없습니다. 아래 SQL을 Supabase SQL Editor에서 한 번 실행하면 다음 방문부터 모입니다.</p>'; $('#sx-events-sql').hidden = false; return; }
+    $('#sx-events-sql').hidden = true; var c = {}; (r.data || []).forEach(function(e){ c[e.kind] = (c[e.kind] || 0) + 1; });
+    bars($('#sx-events'), Object.keys(c).map(function(k){ return [k, c[k]]; }).sort(function(a, b){ return b[1] - a[1]; }), evName);
+  });
+}
 function loadStats(){
   var day = new Date(); day.setHours(0, 0, 0, 0); var week = new Date(Date.now() - 7 * 86400000);
   sb.from('candles').select('*', { count: 'exact', head: true }).gte('created_at', day.toISOString()).then(function(r){ $('#st-today').textContent = r.count == null ? '–' : r.count; });

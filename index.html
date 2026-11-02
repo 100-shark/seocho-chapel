@@ -154,6 +154,15 @@ body.mass #toast{top:auto;bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 #me-feast-custom select{width:auto;flex:1}
 #vigil{position:fixed;inset:0;background:#06040a;z-index:2;pointer-events:none;opacity:1;transition:opacity 13s ease-in}
 #vigil.lift{opacity:0}
+#simple{position:fixed;inset:0;z-index:4;overflow:auto;-webkit-overflow-scrolling:touch;background:radial-gradient(120% 80% at 50% 0%,#2a1f14 0%,#120e0b 60%,#0b0a09 100%);padding:calc(140px + env(safe-area-inset-top,0px)) 16px calc(32px + env(safe-area-inset-bottom,0px))}
+.sp-inner{max-width:560px;margin:0 auto}#simple h2{font-family:var(--serif);font-weight:600;font-size:20px;margin:4px 0 12px}
+.sp-card{background:var(--glass);border:1px solid var(--line);border-radius:18px;padding:16px;margin:0 0 12px}.sp-verse{font-family:var(--serif);font-size:19px;line-height:1.7;margin:0 0 6px}
+.sp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.sp-grid button{min-height:64px;background:var(--glass);border:1px solid var(--line);border-radius:16px;color:var(--fg);font-size:17px;font-weight:500;padding:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}.sp-grid button small{font-size:12px;color:var(--muted);font-weight:400}
+body.simple #stage,body.simple #joy,body.simple .dock-inner,body.simple #ctx,body.simple #tags,body.simple #view-chip{display:none!important}
+body.big .sp-grid button{font-size:19px;min-height:72px}body.big .sp-verse{font-size:22px}
+body.contrast{--fg:#ffffff;--muted:#e9e2d4;--line:rgba(255,255,255,.6);--glass:rgba(0,0,0,.94);--glass-2:#000;--accent:#ffd166;--accent-ink:#000}
+body.contrast .sheet,body.contrast .chip,body.contrast #toast,body.contrast .dock-inner,body.contrast .sp-card,body.contrast .sp-grid button{background:#000;border-color:#fff}
+body.contrast .ghost{border-color:#fff;color:#fff}body.contrast .primary{background:#ffd166;color:#000}body.contrast .tag{background:#000;color:#fff;border-color:#fff}body.contrast #simple{background:#000}
 #vig{position:fixed;inset:0;pointer-events:none;z-index:3;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 52%,rgba(0,0,0,.42) 100%)}
 body.mass #joy{opacity:.35}
 .lv-frame{position:relative;width:100%;aspect-ratio:16/9;max-width:100%;border-radius:14px;overflow:hidden;background:#000;border:1px solid var(--line)}
@@ -380,11 +389,12 @@ body.mass #joy{opacity:.35}
     <button data-open="music"><svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>미사곡<small>성가대석</small></button>
     <button id="mo-cafe"><svg viewBox="0 0 24 24"><path d="M4 8h12v6a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z"/><path d="M16 10h2a2 2 0 0 1 0 4h-2"/><path d="M7 4v2M10 3v3M13 4v2"/></svg>꿈빠니스<small>지하 카페</small></button>
   </div>
-  <div class="row"><button class="ghost" id="snd-toggle">소리 끄기</button><button class="ghost" id="snd-bell">종 한 번 울리기</button><button class="ghost" id="look-toggle">화면 끌기 방향 바꾸기</button><button class="ghost" id="share-btn">경당 주소 복사</button><button class="ghost" id="big-toggle">큰 글씨</button><button class="ghost" id="hymn-toggle">성가 끄기</button><button class="ghost" id="hymn-play">성가 지금 듣기</button><button class="ghost" id="inapp-more" hidden>크롬/사파리로 열기</button></div>
+  <div class="row"><button class="ghost" id="snd-toggle">소리 끄기</button><button class="ghost" id="snd-bell">종 한 번 울리기</button><button class="ghost" id="look-toggle">화면 끌기 방향 바꾸기</button><button class="ghost" id="share-btn">경당 주소 복사</button><button class="ghost" id="big-toggle">큰 글씨</button><button class="ghost" id="contrast-toggle">고대비</button><button class="ghost" id="qual-toggle">화질: 자동</button><button class="ghost" id="simple-toggle">간단 모드 (3D 없이)</button><button class="ghost" id="hymn-toggle">성가 끄기</button><button class="ghost" id="hymn-play">성가 지금 듣기</button><button class="ghost" id="inapp-more" hidden>크롬/사파리로 열기</button></div>
   <p class="muted" id="hymn-now"></p>
   <p class="muted" id="snd-state"></p>
+  <p class="muted" id="qual-state"></p>
   <p class="muted" id="who-list"></p>
-  <p class="muted">오른쪽 아래 조이스틱으로 걷고, 바닥을 누르면 그곳으로 걸어가고, 신자석을 누르면 그 자리에 앉습니다. 벽의 성화와 십자가의 길, 성수대·방명록대·종줄·게시판·제대·감실·오르간, 문밖 마당의 성모자상·촛불 봉헌대·그네·미끄럼틀·공, 그리고 돌아다니는 수녀님과 강아지 우주·사과 가까이 가면 아래에 할 수 있는 일이 뜹니다. 입구 위 성가대석에서는 미사곡이 흐르고, 입구 왼쪽 고해소 앞에서는 양심 성찰을, 성요셉상·성모상·루르드 성모상·예수 성심상 앞에서는 그분들 이야기와 기도를 볼 수 있습니다. 하늘은 서초동의 실제 해와 달의 자리를, 비와 눈은 지금 날씨를 따릅니다. 입구 오른쪽 벽의 문으로 내려가면 지하 카페 꿈빠니스가 있고, 문밖 넓은 돌계단 아래가 마당입니다. 마당과 종탑, 밤하늘, 카페에는 숨은 재미 일곱 가지가 있어요(안내에서 몇 개 찾았는지 보입니다). 자체 주소의 경당에서는 지금 들어와 있는 형제자매가 실제로 보이고, 평화의 인사·촛불·종소리가 서로에게 전해집니다. 화면을 끌면 둘러보고, 오전 6시·정오·오후 6시에는 삼종기도 종이 울립니다. 대림·성탄 시기에는 제대 오른쪽에 구유가, 마당에 성탄 트리가 놓이고, 동방박사는 성탄부터 주님 공현까지 오른쪽 통로를 따라 구유로 갑니다. 재의 수요일엔 이마에 재를, 성지 주일엔 종려가지를 들고, 사순 제5주일부터는 성상이 보라 천으로 가려집니다. 「내 모습」에서 영명축일을 고르면 그날 축하를 받고 이름표에 ✦ 가 붙습니다.</p>
+  <p class="muted">오른쪽 아래 조이스틱으로 걷고, 바닥을 누르면 그곳으로 걸어가고, 신자석을 누르면 그 자리에 앉습니다. 벽의 성화와 십자가의 길, 성수대·방명록대·종줄·게시판·제대·감실·오르간, 문밖 마당의 성모자상·촛불 봉헌대·그네·미끄럼틀·공, 그리고 돌아다니는 수녀님과 강아지 우주·사과 가까이 가면 아래에 할 수 있는 일이 뜹니다. 입구 위 성가대석에서는 미사곡이 흐르고, 입구 왼쪽 고해소 앞에서는 양심 성찰을, 성요셉상·성모상·루르드 성모상·예수 성심상 앞에서는 그분들 이야기와 기도를 볼 수 있습니다. 하늘은 서초동의 실제 해와 달의 자리를, 비와 눈은 지금 날씨를 따릅니다. 입구 오른쪽 벽의 문으로 내려가면 지하 카페 꿈빠니스가 있고, 문밖 넓은 돌계단 아래가 마당입니다. 마당과 종탑, 밤하늘, 카페에는 숨은 재미 일곱 가지가 있어요(안내에서 몇 개 찾았는지 보입니다). 자체 주소의 경당에서는 지금 들어와 있는 형제자매가 실제로 보이고, 평화의 인사·촛불·종소리가 서로에게 전해집니다. 화면을 끌면 둘러보고, 오전 6시·정오·오후 6시에는 삼종기도 종이 울립니다. 대림·성탄 시기에는 제대 오른쪽에 구유가, 마당에 성탄 트리가 놓이고, 동방박사는 성탄부터 주님 공현까지 오른쪽 통로를 따라 구유로 갑니다. 재의 수요일엔 이마에 재를, 성지 주일엔 종려가지를 들고, 사순 제5주일부터는 성상이 보라 천으로 가려집니다. 「내 모습」에서 영명축일을 고르면 그날 축하를 받고 이름표에 ✦ 가 붙습니다. 화면이 버벅이면 화질이 자동으로 낮아지고(더보기에서 직접 고를 수도), 「간단 모드」는 3D 없이 말씀·기도·촛불·방명록만 큰 글씨로 보여 줍니다. 「고대비」는 검은 바탕에 흰 글씨입니다.</p>
   <p class="muted">제대 뒤 벽의 성령 비둘기·놋쇠 광선·청동 십자고상은 서초동성당 제대 실황 화면을, 마당의 성모자상과 제대 양옆의 성요셉상·성모상·루르드 성모상은 본당에서 찍은 사진을 그대로 입힌 것입니다. 벽돌 벽·민트색 카펫·티파니 등·청동 십자가의 길·감실·주례석은 본당 소개 영상(서초동성당2)을 보고 본뜬 것입니다. 마당의 예수 성심상은 위키미디어 공용의 CC0(퍼블릭 도메인 기증) 사진이며, 성가대석의 미사곡은 유튜브 「데일리 가톨릭」의 천사미사곡 영상, 날씨는 Open-Meteo 자료입니다.</p>
   <p class="muted" id="admin-link" hidden><a href="admin/" style="color:var(--accent)">담당자 관리 페이지</a> · 공지 올리기, 방명록 검수</p>
 </div>
@@ -511,6 +521,34 @@ body.mass #joy{opacity:.35}
   <p class="muted" id="cafe-msg"></p>
 </div>
 
+<!-- (v22) 간단 모드: 3D 없이 말씀·기도·촛불·방명록·생중계 -->
+<div id="simple" hidden>
+  <div class="sp-inner">
+    <div class="eyebrow">간단 모드 · 3D 없이</div>
+    <h2 id="sp-date">오늘</h2>
+    <div class="sp-card"><p class="sp-verse" id="sp-verse"></p><p class="muted" id="sp-ref"></p><div class="row"><button class="ghost" id="sp-voice" type="button">말씀 읽어 주기</button></div></div>
+    <p class="muted" id="sp-notice"></p>
+    <div class="sp-grid">
+      <button data-sp="prayers" type="button">기도서<small>18가지</small></button>
+      <button data-sp="rosary" type="button">묵주기도<small>한 단씩</small></button>
+      <button data-sp="angelus" type="button">삼종기도</button>
+      <button data-sp="station" type="button">십자가의 길<small>14처</small></button>
+      <button data-sp="intention" type="button">기도 지향<small>비공개</small></button>
+      <button data-sp="candle" type="button">촛불 올리기</button>
+      <button data-sp="guest" type="button">방명록</button>
+      <button data-sp="live" type="button">생중계</button>
+      <button data-sp="notice" type="button">안내·공지</button>
+      <button data-sp="confess" type="button">양심 성찰</button>
+      <button data-sp="saint" type="button">성인 이야기</button>
+      <button data-sp="art" type="button">성화 보기<small>14점</small></button>
+      <button data-sp="me" type="button">내 이름·영명축일</button>
+      <button data-sp="quiz" type="button">교리 퀴즈</button>
+    </div>
+    <div class="row" style="margin-top:14px"><button class="ghost" id="sp-big" type="button">큰 글씨</button><button class="ghost" id="sp-contrast" type="button">고대비</button><button class="primary" id="sp-back" type="button">3D 경당으로</button></div>
+    <p class="muted">3D 경당을 멈춘 가벼운 화면입니다. 함께 있는 사람 수는 위에 그대로 보이고, 촛불·방명록·기도 지향도 똑같이 전해집니다.</p>
+  </div>
+</div>
+
 <div id="gate">
   <div class="gate-inner">
     <div class="flame-mark"></div>
@@ -518,6 +556,7 @@ body.mass #joy{opacity:.35}
     <h1>서초동성당</h1>
     <p>말없이 함께 앉아 있는 곳입니다. 조이스틱으로 걸어 다니고, 신자석에 앉고, 옆 사람과 평화의 인사를 나눌 수 있습니다. 문을 나서면 넓은 계단 아래 마당에 성모자상과 촛불 봉헌대, 아이들 놀이터가 있고, 입구 옆 문으로 내려가면 지하 카페 꿈빠니스가 있습니다. 주일 오후 5시 청년미사 생중계 시간에는 미사 모드로 바뀝니다.</p>
     <button class="primary" id="enter">들어가기</button>
+    <button class="ghost" id="enter-simple" type="button">기도만 보기 · 3D 없이 (가벼움)</button>
     <p class="tiny">소리가 켜집니다 · 계정과 개인정보가 없습니다 · 접속자 수는 시범용 가상 수치입니다</p>
     <p class="tiny" id="inapp-gate" hidden>카카오톡 안에서는 함께 있는 사람이 늦게 보입니다. <button class="ghost" type="button" style="margin-left:6px">크롬/사파리로 열기</button></p>
   </div>
@@ -1616,7 +1655,7 @@ function rainSound(){ if (!actx || !master || SKY.rainGain) return; try { var le
 function thunderSound(){ if (!actx || !master || !soundOn) return; setTimeout(function(){ try { var len = Math.floor(actx.sampleRate * 2.6), buf = actx.createBuffer(1, len, actx.sampleRate), d = buf.getChannelData(0); for (var i = 0; i < len; i++) { var e = 1 - i / len; d[i] = (Math.random() * 2 - 1) * e * e; }
   var src = actx.createBufferSource(); src.buffer = buf; var lp = actx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 150; var g = actx.createGain(), t = actx.currentTime; g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.28, t + 0.08); g.gain.exponentialRampToValueAtTime(0.0001, t + 2.5); src.connect(lp); lp.connect(g); g.connect(master); src.start(t); src.stop(t + 2.7); } catch (e) {} }, 500 + Math.random() * 1500); }
 function precipSet(){ var w = SKY.wx; if (!SKY.rain) { SKY.rain = precipMake(900, false); SKY.snow = precipMake(700, true); }
-  var nr = Math.round(900 * Math.min(1, w.rain)), ns = Math.round(700 * Math.min(1, w.snow));
+  var qf = (typeof QUAL !== 'undefined' && QUAL) ? QUAL.precip : 1, nr = Math.round(900 * Math.min(1, w.rain) * qf), ns = Math.round(700 * Math.min(1, w.snow) * qf); // (v22) 화질 단계만큼
   SKY.rain.geometry.setDrawRange(0, nr); SKY.rain.visible = nr > 0; SKY.snow.geometry.setDrawRange(0, ns); SKY.snow.visible = ns > 0;
   if (nr > 0) rainSound(); }
 // 눈 덮임: 내리는 동안 지붕·잔디·소나무·놀이터 매트가 희어지고, 마당 바닥에 흰 켜가 덮입니다
@@ -2923,7 +2962,7 @@ var QUIZ = [
   { q: '성탄 전 네 주간, 예수님 오심을 기다리는 시기는?', a: ['사순', '대림', '부활', '연중'], c: 1, why: '대림 시기예요. 초 네 개를 하나씩 켜며 기다려요. 이 경당 제대 옆에도 대림환이 놓여요.' }
 ];
 var quiz = { order: [], i: 0, score: 0, done: false };
-function quizStart(){ quiz.order = QUIZ.map(function(_, i){ return i; }).sort(function(){ return Math.random() - 0.5; }).slice(0, 8); quiz.i = 0; quiz.score = 0; quiz.done = false; quizRender(); openSheet('quiz'); }
+function quizStart(){ if (typeof logEvent === 'function') logEvent('quiz'); quiz.order = QUIZ.map(function(_, i){ return i; }).sort(function(){ return Math.random() - 0.5; }).slice(0, 8); quiz.i = 0; quiz.score = 0; quiz.done = false; quizRender(); openSheet('quiz'); }
 function quizRender(){
   var q = QUIZ[quiz.order[quiz.i]], opts = $('#qz-opts'); opts.innerHTML = ''; $('#qz-why').textContent = ''; $('#qz-next').hidden = true;
   $('#qz-num').textContent = (quiz.i + 1) + ' / ' + quiz.order.length + ' · 맞힌 문제 ' + quiz.score; $('#qz-q').textContent = q.q;
@@ -2955,7 +2994,7 @@ var TOUR = { on: false, i: -1, timer: null, steps: [
   { go: [0, 16.4], face: [0, 25], say: '문을 나서면 넓은 계단 아래 마당이에요. 봉헌대에 촛불을 올리고, 놀이터에서 그네를 타고, 강아지 우주·사과와 공놀이를 할 수 있어요. 입구 옆 계단으로 내려가면 지하 카페 꿈빠니스도 있답니다.' },
   { go: [-3.3, 32.8], face: [-7.2, 32.9], say: '이 성모자상은 본당 마당의 성모님 사진 그대로예요. 묵주 버튼으로 한 단 바쳐 보세요. 둘러보기는 여기까지. 평화를 빕니다!' }
 ] };
-function tourStart(){ TOUR.on = true; TOUR.i = -1; store('chapel-toured', true); closeSheets(); sister.tour = true; sister.cool = 999; if (state.seated) leaveSeat(); tourNext(); }
+function tourStart(){ if (typeof logEvent === 'function') logEvent('tour'); TOUR.on = true; TOUR.i = -1; store('chapel-toured', true); closeSheets(); sister.tour = true; sister.cool = 999; if (state.seated) leaveSeat(); tourNext(); }
 function tourNext(){
   if (!TOUR.on) return; TOUR.i++; var s = TOUR.steps[TOUR.i]; if (!s) { tourEnd(); return; }
   sister.state = 'walk'; sister.path = findPath({ x: sister.g.position.x, z: sister.g.position.z }, { x: s.go[0] + 0.9, z: s.go[1] + 0.5 }); if (!sister.path.length) sister.path = [{ x: s.go[0] + 0.9, z: s.go[1] + 0.5 }];
@@ -3047,7 +3086,7 @@ ARTS.forEach(function(a, i){
   OBJ[key] = { name: '「' + a.title + '」', verb: '성화 보기', at: at, go: go, range: range, hint: null, art: i };
 });
 var artIdx = 0;
-function openArt(i){
+function openArt(i){ if (typeof logEvent === 'function') logEvent('art');
   artIdx = (i + ARTS.length) % ARTS.length; var a = ARTS[artIdx];
   $('#art-img').src = ART_IMG[a.id].src; $('#art-img').alt = a.title; $('#art-eyebrow').textContent = a.artist + ' · ' + a.year; $('#art-title').textContent = a.title; $('#art-where').textContent = a.credit ? a.where + ' · ' + a.credit : a.where ? a.where + ' · 퍼블릭 도메인 (위키미디어 공용)' : '퍼블릭 도메인 (위키미디어 공용)'; $('#art-note').textContent = a.note; $('#art-idx').textContent = (artIdx + 1) + ' / ' + ARTS.length;
   openSheet('art');
@@ -3085,7 +3124,7 @@ for (var si = 0; si < 14; si++) (function(i){
   OBJ[key] = { name: '십자가의 길 제' + (i + 1) + '처', verb: '머물러 기도하기', at: [sx * (W/2 - 0.06), z], go: [sx * (z < -9.45 ? 8.6 : 7.4), Math.max(-9.45, z)], range: 3.4, hint: null, st: i }; // (v20) 1·14처는 첫 줄 앞 모서리에서
 })(si);
 var stIdx = 0;
-function openStation(i){
+function openStation(i){ if (typeof logEvent === 'function') logEvent('station');
   stIdx = i; $('#st-eyebrow').textContent = '십자가의 길 · 제' + (i + 1) + '처'; $('#st-title').textContent = STATIONS[i]; $('#st-note').textContent = ST_NOTE[i]; $('#st-next').textContent = i < 13 ? '제' + (i + 2) + '처로 걸어가기' : '처음(제1처)으로';
   openSheet('station'); var done = store('chapel-stations') || {}; done[i] = true; store('chapel-stations', done); var n = Object.keys(done).length; $('#st-count').textContent = n >= 14 ? '14처를 모두 지나셨습니다.' : '지나온 처: ' + n + ' / 14';
 }
@@ -3238,7 +3277,7 @@ function frame(){
   if (moving) { stepT += dt; if (stepT > 0.46) { stepT = 0; footstep(myAvatar.position.z > 15); } } else stepT = 0.3;
   updateBows();
   if (!joy.active && orbit.autoYaw) { orbit.autoYaw *= Math.exp(-dt * 2.2); if (Math.abs(orbit.autoYaw) < 0.002) orbit.autoYaw = 0; }
-  skyTick(dt, t); eggTick(dt, t); updateHand(); seasonTick(dt, t); updateFX(dt); updateRide(dt); updateSister(dt); updateDogs(dt); updateBall(dt); updatePeers(dt); rtTrack(false);
+  skyTick(dt, t); eggTick(dt, t); updateHand(); seasonTick(dt, t); qualTick(dt); qualFrame(); updateFX(dt); updateRide(dt); updateSister(dt); updateDogs(dt); updateBall(dt); updatePeers(dt); rtTrack(false);
 
   // facing smoothing
   var cur = myAvatar.rotation.y, diff = Math.atan2(Math.sin(state.facing - cur), Math.cos(state.facing - cur));
@@ -3269,7 +3308,7 @@ function updateCtx(){
   el.hidden = false; $('#ctx-l').textContent = OBJ[k].name + ' · ' + OBJ[k].verb; $('#ctx-btn').setAttribute('data-k', k);
 }
 frame();
-document.addEventListener('visibilitychange', function(){ if (document.hidden) { running = false; } else if (!running) { running = true; clock.getDelta(); frame(); } });
+document.addEventListener('visibilitychange', function(){ if (document.hidden) { running = false; } else if (!running && !(typeof SIMPLE !== 'undefined' && SIMPLE && SIMPLE.on)) { running = true; clock.getDelta(); frame(); } }); // (v22) 간단 모드면 멈춘 채로
 
 // ===================== (v18) 경당에 흐르는 미사곡 (유튜브) =====================
 // 성가대석에서 그레고리오 성가 「천사 미사곡(Missa de Angelis)」이 흐릅니다 — 유튜브 채널 「데일리 가톨릭」의 영상을 IFrame API 로 그대로 재생(자체 주소에서만, 시범 페이지에선 임베드가 막힘).
@@ -3418,7 +3457,7 @@ var sheets = {}; SHEETS.forEach(function(k){ sheets[k] = $('#sh-' + k); });
 var btns = { rosary: $('#b-rosary'), candle: $('#b-candle'), more: $('#b-more') };
 function anySheetOpen(){ if (!SHEETS) return false; return SHEETS.some(function(k){ return sheets[k].classList.contains('open'); }); }
 var SPECIAL_SHEET = { mirror: 'me', adore: 'adore', rosary: 'rosary', organ: 'organ', creche: 'creche' }; // 이 특별 카메라는 해당 시트가 닫히면 끝납니다
-function openSheet(k){
+function openSheet(k){ if (k && k !== 'more' && k !== 'tour' && typeof logEvent === 'function') logEvent('sheet_' + k);
   if (state.special && SPECIAL_SHEET[state.special] && k !== SPECIAL_SHEET[state.special]) { stopAdoration(); endSpecial(); }
   SHEETS.forEach(function(n){ sheets[n].classList.toggle('open', n === k); if (btns[n]) btns[n].classList.toggle('on', n === k); });
   if (k === 'me') { enterMirror(); if (typeof renderFeastUI === 'function') renderFeastUI(); }
@@ -3787,7 +3826,7 @@ function rtTrack(force){
   RT.lastSent = now; RT.hb = now; RT.lastKey = k;
   try { RT.ch.track(p); } catch (e) {}
 }
-function rtSend(kind, extra){ // 가까운 사람에게 보이는 작은 몸짓: 평화·아멘·성호·촛불·종·방명록·오르간
+function rtSend(kind, extra){ if (typeof logEvent === 'function') logEvent(kind); // 가까운 사람에게 보이는 작은 몸짓: 평화·아멘·성호·촛불·종·방명록·오르간
   if (!RT || !RT.on || !RT.ch) return;
   var p = { id: RT.id, n: (me.name || '').slice(0, 12), k: kind, x: Math.round(myAvatar.position.x * 100) / 100, z: Math.round(myAvatar.position.z * 100) / 100 };
   if (extra) Object.keys(extra).forEach(function(q){ p[q] = extra[q]; });
@@ -3967,7 +4006,7 @@ function snapshot(kind){
   photoFrame(g, W, H); // (v21) 전례색 테두리와 시기 이름
   return c;
 }
-function sharePhoto(kind){
+function sharePhoto(kind){ if (typeof logEvent === 'function') logEvent('photo');
   var c, fn = (kind === 'card' ? 'seocho-chapel-verse-' : 'seocho-chapel-') + new Date().toISOString().slice(0, 10) + '.jpg';
   try { c = snapshot(kind); } catch (e) { toast('사진을 만들지 못했습니다.', 2000); return; }
   c.toBlob(function(blob){
@@ -4051,7 +4090,7 @@ myAvatar.position.set(0, 0, 13.4); state.facing = 0; setPose(myAvatar, 'stand');
 camPos.set(0, 2.1, 16.4); camLook.set(0, 1.15, 13.4);
 evalMode();
 $('#enter').addEventListener('click', function(){
-  initAudio(); setSound(true); entered = true; unmuteKick(); audioResume(); rtInit(); recordVisit(); if (typeof seasonEnter === 'function') seasonEnter(); setTimeout(function(){ rtRestWrite(true); rtRestRead(); }, 1500); AMB.nextAt = Date.now() + 6000; musicOnEnter(); // 들어오고 6초 뒤 첫 성가 · (v18) 미사곡 시작
+  initAudio(); setSound(true); entered = true; unmuteKick(); audioResume(); rtInit(); recordVisit(); if (typeof seasonEnter === 'function') seasonEnter(); if (typeof logEvent === 'function') logEvent(SIMPLE.want ? 'enter_simple' : 'enter'); if (typeof simpleEnter === 'function') simpleEnter(); setTimeout(function(){ rtRestWrite(true); rtRestRead(); }, 1500); AMB.nextAt = Date.now() + 6000; musicOnEnter(); // 들어오고 6초 뒤 첫 성가 · (v18) 미사곡 시작
   if (mode !== 'mass' && !store('chapel-toured')) setTimeout(function(){ if (!anySheetOpen() && !state.special) openSheet('tour'); }, 2600);
   var g = $('#gate'); g.classList.add('away'); setTimeout(function(){ g.hidden = true; }, 700);
   bell(0.35);
@@ -4059,7 +4098,69 @@ $('#enter').addEventListener('click', function(){
   else { setTimeout(function(){ toast('바닥을 누르면 그곳으로 걸어갑니다. 금빛 점 가까이 가면 할 수 있는 일이 뜹니다.', 4200); }, 1200); }
 });
 loadGuest();
-window.__chapelDebug = { season: SEASON, creche: CRECHE, nowDate: nowDate, when: WHEN, feast: { today: feastToday, cands: feastCandidates, render: renderFeastUI, announce: feastAnnounce, set: feastSet }, rtPayload: rtPayload, renderCreche: renderCreche, openCreche: openCreche, seasonEnter: seasonEnter, camBlock: CAM_BLOCK, desiredCamera: desiredCamera, orbit: orbit, joy: joy, pews: PEWS, groundY: groundY, cafe: CAFE, cafeOrder: cafeOrder, cafeSit: cafeSit, eggs: EGGS, roosterCrow: roosterCrow, petCat: petCat, towerView: towerView, endTower: endTower, confessAmen: confessAmen, confLamp: function(){ return CONF_LAMP; }, nodes: NODES, zones: ZONES, avatarY: function(){ return myAvatar.position.y; }, myPose: function(){ return myAvatar.userData.pose; }, sky: SKY, skyUpdate: skyUpdate, wxSet: wxSet, wxApply: wxApply, music: MUSIC, musicPlay: musicPlay, musicPause: musicPause, saints: SAINTS_INFO, openSaint: openSaint, prayers: prayerList, openConfess: openConfess, buildAvatar: buildAvatar, setPose: setPose, me: function(){ return me; }, applyMe: applyMe, TOPS: TOPS, HATS: HATS, HAIRS: HAIRS, SIZES: SIZES, shafts: SHAFTS, dust: function(){ return DUST; }, loft: LOFT, ambList: ambList, inapp: INAPP, openExternal: openExternal, rtRestLeave: rtRestLeave, rtr: RTR, rtRestRead: rtRestRead, rtRestWrite: rtRestWrite, rtMerge: rtMerge, unmute: UNMUTE, audioResume: audioResume, audioStateText: audioStateText, amb: AMB, ambPlay: ambPlay, ambStop: ambStop, ambNext: ambNext, setHymns: setHymns, bow: bow, bows: bows, rtSeat: rtSeat, hymns: HYMNS, rtDraw: rtDraw, rtHidden: rtHidden, visits: VISITS, countVisits: countVisits, recordVisit: recordVisit, setBig: setBig, padStart: padStart, padStop: padStop, pickGreet: pickGreet, renderCandleNotes: renderCandleNotes, candleCards: candleCards, loadNotices: loadNotices, notices: function(){ return NOTICES; }, rt: RT, rtSync: rtSync, rtEmote: rtEmote, tour: TOUR, tourStart: tourStart, quizStart: quizStart, throwBall: throwBall, ball: BALL, startOrgan: startOrgan, organPlay: organPlay, liturgy: liturgy, LIT: LIT, sharePhoto: sharePhoto, snapshot: snapshot, nextMass: nextMass, billboards: billboards, realImg: REAL_IMG, scene: scene, camera: camera, THREE: THREE, interact: interact, walkTo: walkTo, goSit: goSit, peace: peace, ride: { swing: rideSwing, slide: rideSlide, end: endRide }, dogs: dogs, sister: sister, openArt: openArt, openStation: openStation, petDog: petDog, meetSister: meetSister, openAngelus: openAngelus, photo: function(px, py, pz, lx, ly, lz){ beginSpecial('photo', new THREE.Vector3(px, py, pz), new THREE.Vector3(lx, ly, lz)); camPos.set(px, py, pz); camLook.set(lx, ly, lz); }, photoEnd: endSpecial, fx: { dove: fxDove, petals: fxPetals, halo: fxHalo, sparkle: fxSparkle }, obj: OBJ, inZone: inZone, signCross: signCross, amen: amen, daylight: function(d, az){ SKY.force = (d === null || d === undefined) ? null : d; if (az !== undefined) SKY.forceAz = az; skyUpdate(true); }, teleport: function(x, z, tx, tz){ walker = null; if (state.seated) leaveSeat(); if (CAFE.seat) cafeStand(); myAvatar.position.set(x, groundY(x, z), z); if (tx !== undefined) { faceTo(tx, tz); myAvatar.rotation.y = state.facing; } var w = desiredCamera(); camPos.copy(w.pos); camLook.copy(w.look); }, snapCam: function(){ var w = desiredCamera(); camPos.copy(w.pos); camLook.copy(w.look); }, setJoy: function(x, y){ joy.x = x; joy.y = y; joy.active = !!(x || y); }, openSheet: openSheet, closeSheets: closeSheets, seats: seats, setView: setView, state: function(){ return { mode: mode, seated: state.seated, posture: state.posture, special: state.special, pos: [myAvatar.position.x, myAvatar.position.z], walking: !!walker, view: view, near: nearObj(), candles: rackSlots.filter(function(s){ return s.used; }).length, ride: ride ? ride.kind : null, fx: FX.length }; } };
+// ---------- (v22) 화질 자동 조절: 프레임 속도를 재서 픽셀 비율·빛기둥·빛먼지·별·비눈 입자·함께 그리는 사람 수를 4단계로 ----------
+//   처음 단계는 기기 메모리/코어 수로 짐작하고(chapel-quality 에 저장), 자동이면 2초 창의 평균 fps 가 24 아래로 두 번이면 한 단계 내리고(알림 한 번) 55 위로 다섯 번이면 한 단계 올립니다.
+var QUAL_LEVELS = [
+  { name: '최소', pr: 0.75, shafts: false, stars: 120, precip: 0.2, peers: 4 },
+  { name: '낮음', pr: 1.0, shafts: false, stars: 220, precip: 0.35, peers: 8 },
+  { name: '보통', pr: 1.25, shafts: true, stars: 460, precip: 0.6, peers: 16 },
+  { name: '높음', pr: 1.75, shafts: true, stars: 460, precip: 1, peers: 24 }
+];
+var QUAL = (function(){ var s = store('chapel-quality') || {}, mem = navigator.deviceMemory, cores = navigator.hardwareConcurrency || 8, guess = (mem && mem <= 3) ? 1 : ((mem && mem <= 4) || cores <= 4) ? 2 : 3;
+  return { level: typeof s.level === 'number' ? Math.max(0, Math.min(3, s.level)) : guess, auto: s.auto !== false, guess: guess, precip: 1, acc: 0, n: 0, low: 0, high: 0, settle: performance.now() + 4000, fps: 0, toasted: false }; })();
+function qualApply(){ var L = QUAL_LEVELS[QUAL.level]; QUAL.precip = L.precip;
+  if (typeof renderer !== 'undefined') { renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, L.pr)); if (typeof resize === 'function') resize(); }
+  if (typeof SKY !== 'undefined' && SKY) { if (SKY.stars) SKY.stars.geometry.setDrawRange(0, L.stars); if (SKY.rain && typeof precipSet === 'function') precipSet(); }
+  if (typeof RT !== 'undefined' && RT) { RT.maxDrawn = (typeof SIMPLE !== 'undefined' && SIMPLE && SIMPLE.on) ? 0 : L.peers; if (RT.peers && typeof rtDraw === 'function') rtDraw(true); }
+  qualLabel(); }
+function setQuality(level, auto){ QUAL.level = Math.max(0, Math.min(3, level)); if (auto !== undefined) QUAL.auto = !!auto; QUAL.settle = performance.now() + 4000; QUAL.acc = 0; QUAL.n = 0; QUAL.low = 0; QUAL.high = 0; store('chapel-quality', { level: QUAL.level, auto: QUAL.auto }); qualApply(); }
+function qualLabel(){ var b = $('#qual-toggle'), p = $('#qual-state'), L = QUAL_LEVELS[QUAL.level]; if (b) b.textContent = '화질: ' + (QUAL.auto ? '자동 (' + L.name + ')' : L.name);
+  if (p) p.textContent = (QUAL.auto ? '화면이 버벅이면 화질을 자동으로 낮추고, 여유가 있으면 다시 올립니다.' : '화질을 직접 정했습니다. 눌러서 「자동」으로 두면 기기에 맞춰 조절합니다.') + (QUAL.fps ? ' 지금 ' + Math.round(QUAL.fps) + ' fps.' : ''); }
+function qualTick(dt){ // frame() 은 이 블록보다 먼저 한 번 불리므로(초기화 중) QUAL 이 아직 없으면 그냥 돌아갑니다
+  if (typeof QUAL === 'undefined' || !QUAL || !QUAL.auto || document.hidden || !entered) return; if (typeof SIMPLE !== 'undefined' && SIMPLE && SIMPLE.on) return;
+  QUAL.acc += dt; QUAL.n++; if (QUAL.acc < 2) return;
+  var fps = QUAL.n / QUAL.acc; QUAL.acc = 0; QUAL.n = 0; QUAL.fps = fps; if (performance.now() < QUAL.settle) return;
+  if (fps < 24) { QUAL.low++; QUAL.high = 0; if (QUAL.low >= 2 && QUAL.level > 0) { setQuality(QUAL.level - 1); if (!QUAL.toasted) { QUAL.toasted = true; toast('화면이 버벅여 화질을 「' + QUAL_LEVELS[QUAL.level].name + '」으로 낮췄습니다. 더보기에서 바꿀 수 있어요.', 3600); } } }
+  else if (fps > 55) { QUAL.high++; QUAL.low = 0; if (QUAL.high >= 5 && QUAL.level < 3) setQuality(QUAL.level + 1); }
+  else { QUAL.low = 0; QUAL.high = 0; }
+  qualLabel(); }
+function qualFrame(){ if (typeof QUAL === 'undefined' || !QUAL || QUAL_LEVELS[QUAL.level].shafts) return; if (typeof SHAFTS !== 'undefined') for (var i = 0; i < SHAFTS.length; i++) SHAFTS[i].visible = false; if (typeof DUST !== 'undefined' && DUST) DUST.visible = false; } // 낮은 단계: 하늘 갱신이 다시 켜도 빛기둥·빛먼지를 끕니다
+if ($('#qual-toggle')) $('#qual-toggle').addEventListener('click', function(){ // 자동 → 높음 → 보통 → 낮음 → 최소 → 자동
+  if (QUAL.auto) setQuality(3, false); else if (QUAL.level === 0) setQuality(QUAL.guess, true); else setQuality(QUAL.level - 1, false); toast('화질 ' + (QUAL.auto ? '자동' : QUAL_LEVELS[QUAL.level].name), 1400); });
+qualApply();
+// ---------- (v22) 익명 사용 집계: 기능 종류(kind)와 시각만 적습니다 — 이름·기기·위치 없음. 표(events)가 없으면 한 번 실패한 뒤 조용히 멈춥니다. 종류당 10분에 한 번, 접속당 40개까지 ----------
+var EV = { off: !SHARED, sent: {}, n: 0 };
+function logEvent(kind){ if (EV.off || !kind) return; kind = String(kind).replace(/[^a-z0-9_]/gi, '').slice(0, 24); if (!kind) return; var now = Date.now(); if (EV.sent[kind] && now - EV.sent[kind] < 600000) return; if (EV.n >= 40) return; EV.sent[kind] = now; EV.n++;
+  try { sbFetch('events', { method: 'POST', body: JSON.stringify({ kind: kind }) }).then(function(r){ if (r.status === 404 || r.status === 400 || r.status === 401 || r.status === 403 || r.status === 405) EV.off = true; }).catch(function(){}); } catch (e) { EV.off = true; } }
+// ---------- (v22) 간단 모드: 3D 를 멈추고(렌더 루프 정지·캔버스 숨김) 말씀·기도·촛불·방명록·생중계를 큰 글씨 화면으로. 가벼운 폰·어르신·접근성용 ----------
+//   들어가는 길: 첫 화면 「기도만 보기」, 더보기 「간단 모드」, 주소 ?simple=1. 함께 있기(접속 수·촛불·방명록)는 그대로 — 렌더 루프가 멈추므로 심장박동만 따로 보냅니다.
+var SIMPLE = { on: false, want: /[?&]simple=1/.test(location.search), hb: null };
+function simpleRender(){ var v = dailyVerse(), sa = todaySaint(), d = nowDate();
+  var t = $('#sp-date'); if (t) t.textContent = d.getFullYear() + '년 ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일' + (LIT.label ? ' · ' + LIT.label : '') + (sa ? ' · ' + sa : '');
+  var q = $('#sp-verse'); if (q) q.textContent = '“' + v[0] + '”'; var r = $('#sp-ref'); if (r) r.textContent = v[1];
+  var n = $('#sp-notice'); if (n) { var first = (typeof NOTICES !== 'undefined' && NOTICES && NOTICES.length) ? NOTICES.filter(function(x){ return x.active !== false; })[0] : null; n.textContent = first ? '공지 · ' + first.title : ''; } }
+function simpleOn(){ if (SIMPLE.on) return; SIMPLE.on = true; document.body.classList.add('simple'); var p = $('#simple'); if (p) p.hidden = false;
+  if (typeof endSpecial === 'function') endSpecial(); closeSheets(); running = false;
+  if (typeof RT !== 'undefined' && RT) { RT.maxDrawn = 0; if (typeof rtDraw === 'function') rtDraw(true); }
+  if (!SIMPLE.hb) SIMPLE.hb = setInterval(function(){ if (typeof rtTrack === 'function') rtTrack(false); }, 2500);
+  simpleRender(); var b = $('#simple-toggle'); if (b) b.textContent = '3D 경당으로 돌아가기'; if (typeof logEvent === 'function') logEvent('simple_on'); }
+function simpleOff(){ if (!SIMPLE.on) return; SIMPLE.on = false; document.body.classList.remove('simple'); var p = $('#simple'); if (p) p.hidden = true;
+  if (SIMPLE.hb) { clearInterval(SIMPLE.hb); SIMPLE.hb = null; } if (typeof qualApply === 'function') qualApply();
+  if (!running) { running = true; clock.getDelta(); frame(); } var b = $('#simple-toggle'); if (b) b.textContent = '간단 모드 (3D 없이)'; }
+function simpleEnter(){ if (SIMPLE.want) { SIMPLE.want = false; setTimeout(simpleOn, 50); } }
+if ($('#enter-simple')) $('#enter-simple').addEventListener('click', function(){ SIMPLE.want = true; $('#enter').click(); });
+if ($('#simple-toggle')) $('#simple-toggle').addEventListener('click', function(){ closeSheets(); if (SIMPLE.on) simpleOff(); else simpleOn(); });
+document.querySelectorAll('#simple [data-sp]').forEach(function(b){ b.addEventListener('click', function(){ var k = b.getAttribute('data-sp');
+  if (k === 'station') openStation(0); else if (k === 'art') openArt(0); else if (k === 'angelus') openAngelus(); else if (k === 'saint') openSaint('mary'); else if (k === 'confess') openConfess(); else openSheet(k); }); });
+if ($('#sp-back')) $('#sp-back').addEventListener('click', simpleOff);
+if ($('#sp-big')) $('#sp-big').addEventListener('click', function(){ setBig(!document.body.classList.contains('big')); });
+if ($('#sp-voice')) $('#sp-voice').addEventListener('click', function(){ initAudio(); if (typeof TTS === 'undefined' || !TTS.ok) { toast('이 기기에서는 읽어 주기를 쓸 수 없습니다.', 2000); return; } var v = dailyVerse(); speak(v[0] + '. ' + v[1]); });
+// ---------- (v22) 고대비: 검은 바탕·흰 글씨·굵은 테두리 (chapel-contrast 에 저장) ----------
+function setContrast(on){ document.body.classList.toggle('contrast', !!on); store('chapel-contrast', !!on); document.querySelectorAll('#contrast-toggle, #sp-contrast').forEach(function(b){ b.textContent = on ? '고대비 끄기' : '고대비'; }); }
+setContrast(!!store('chapel-contrast'));
+if ($('#contrast-toggle')) $('#contrast-toggle').addEventListener('click', function(){ setContrast(!document.body.classList.contains('contrast')); });
+if ($('#sp-contrast')) $('#sp-contrast').addEventListener('click', function(){ setContrast(!document.body.classList.contains('contrast')); });
+window.__chapelDebug = { qual: QUAL, qualLevels: QUAL_LEVELS, setQuality: setQuality, qualTick: qualTick, simple: SIMPLE, simpleOn: simpleOn, simpleOff: simpleOff, setContrast: setContrast, ev: EV, logEvent: logEvent, isRunning: function(){ return running; }, renderer: renderer, shafts: SHAFTS, season: SEASON, creche: CRECHE, nowDate: nowDate, when: WHEN, feast: { today: feastToday, cands: feastCandidates, render: renderFeastUI, announce: feastAnnounce, set: feastSet }, rtPayload: rtPayload, renderCreche: renderCreche, openCreche: openCreche, seasonEnter: seasonEnter, camBlock: CAM_BLOCK, desiredCamera: desiredCamera, orbit: orbit, joy: joy, pews: PEWS, groundY: groundY, cafe: CAFE, cafeOrder: cafeOrder, cafeSit: cafeSit, eggs: EGGS, roosterCrow: roosterCrow, petCat: petCat, towerView: towerView, endTower: endTower, confessAmen: confessAmen, confLamp: function(){ return CONF_LAMP; }, nodes: NODES, zones: ZONES, avatarY: function(){ return myAvatar.position.y; }, myPose: function(){ return myAvatar.userData.pose; }, sky: SKY, skyUpdate: skyUpdate, wxSet: wxSet, wxApply: wxApply, music: MUSIC, musicPlay: musicPlay, musicPause: musicPause, saints: SAINTS_INFO, openSaint: openSaint, prayers: prayerList, openConfess: openConfess, buildAvatar: buildAvatar, setPose: setPose, me: function(){ return me; }, applyMe: applyMe, TOPS: TOPS, HATS: HATS, HAIRS: HAIRS, SIZES: SIZES, shafts: SHAFTS, dust: function(){ return DUST; }, loft: LOFT, ambList: ambList, inapp: INAPP, openExternal: openExternal, rtRestLeave: rtRestLeave, rtr: RTR, rtRestRead: rtRestRead, rtRestWrite: rtRestWrite, rtMerge: rtMerge, unmute: UNMUTE, audioResume: audioResume, audioStateText: audioStateText, amb: AMB, ambPlay: ambPlay, ambStop: ambStop, ambNext: ambNext, setHymns: setHymns, bow: bow, bows: bows, rtSeat: rtSeat, hymns: HYMNS, rtDraw: rtDraw, rtHidden: rtHidden, visits: VISITS, countVisits: countVisits, recordVisit: recordVisit, setBig: setBig, padStart: padStart, padStop: padStop, pickGreet: pickGreet, renderCandleNotes: renderCandleNotes, candleCards: candleCards, loadNotices: loadNotices, notices: function(){ return NOTICES; }, rt: RT, rtSync: rtSync, rtEmote: rtEmote, tour: TOUR, tourStart: tourStart, quizStart: quizStart, throwBall: throwBall, ball: BALL, startOrgan: startOrgan, organPlay: organPlay, liturgy: liturgy, LIT: LIT, sharePhoto: sharePhoto, snapshot: snapshot, nextMass: nextMass, billboards: billboards, realImg: REAL_IMG, scene: scene, camera: camera, THREE: THREE, interact: interact, walkTo: walkTo, goSit: goSit, peace: peace, ride: { swing: rideSwing, slide: rideSlide, end: endRide }, dogs: dogs, sister: sister, openArt: openArt, openStation: openStation, petDog: petDog, meetSister: meetSister, openAngelus: openAngelus, photo: function(px, py, pz, lx, ly, lz){ beginSpecial('photo', new THREE.Vector3(px, py, pz), new THREE.Vector3(lx, ly, lz)); camPos.set(px, py, pz); camLook.set(lx, ly, lz); }, photoEnd: endSpecial, fx: { dove: fxDove, petals: fxPetals, halo: fxHalo, sparkle: fxSparkle }, obj: OBJ, inZone: inZone, signCross: signCross, amen: amen, daylight: function(d, az){ SKY.force = (d === null || d === undefined) ? null : d; if (az !== undefined) SKY.forceAz = az; skyUpdate(true); }, teleport: function(x, z, tx, tz){ walker = null; if (state.seated) leaveSeat(); if (CAFE.seat) cafeStand(); myAvatar.position.set(x, groundY(x, z), z); if (tx !== undefined) { faceTo(tx, tz); myAvatar.rotation.y = state.facing; } var w = desiredCamera(); camPos.copy(w.pos); camLook.copy(w.look); }, snapCam: function(){ var w = desiredCamera(); camPos.copy(w.pos); camLook.copy(w.look); }, setJoy: function(x, y){ joy.x = x; joy.y = y; joy.active = !!(x || y); }, openSheet: openSheet, closeSheets: closeSheets, seats: seats, setView: setView, state: function(){ return { mode: mode, seated: state.seated, posture: state.posture, special: state.special, pos: [myAvatar.position.x, myAvatar.position.z], walking: !!walker, view: view, near: nearObj(), candles: rackSlots.filter(function(s){ return s.used; }).length, ride: ride ? ride.kind : null, fx: FX.length }; } };
 })();
 </script>
 
