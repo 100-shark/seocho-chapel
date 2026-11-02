@@ -149,6 +149,11 @@ body.mass #toast{top:auto;bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 #tags{position:fixed;inset:0;pointer-events:none;z-index:4;overflow:hidden}
 .tag{position:absolute;transform:translate(-50%,-100%);background:rgba(18,14,11,.62);border:1px solid var(--line);border-radius:999px;padding:3px 9px;font-size:11.5px;color:var(--fg);white-space:nowrap;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .tag.say{background:rgba(226,169,75,.9);color:var(--accent-ink);font-family:var(--serif);font-weight:600;font-size:13px;border-color:transparent}
+.tag.feast{border-color:rgba(226,169,75,.85);color:#f3d68a}
+.sheet select{width:100%;box-sizing:border-box;background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:12px;padding:12px 14px;color:var(--fg);font:inherit;font-size:15px}
+#me-feast-custom select{width:auto;flex:1}
+#vigil{position:fixed;inset:0;background:#06040a;z-index:2;pointer-events:none;opacity:1;transition:opacity 13s ease-in}
+#vigil.lift{opacity:0}
 #vig{position:fixed;inset:0;pointer-events:none;z-index:3;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 52%,rgba(0,0,0,.42) 100%)}
 body.mass #joy{opacity:.35}
 .lv-frame{position:relative;width:100%;aspect-ratio:16/9;max-width:100%;border-radius:14px;overflow:hidden;background:#000;border:1px solid var(--line)}
@@ -323,10 +328,22 @@ body.mass #joy{opacity:.35}
   <p class="muted" id="lv-note"></p>
 </div>
 
+<!-- (v21) 구유: 대림~주님 세례 축일, 제대 오른쪽 -->
+<div class="sheet short" id="sh-creche" role="dialog" aria-label="구유">
+  <div class="sh-head"><div><div class="eyebrow" id="cr-eyebrow">제대 오른쪽 · 구유</div><h2 id="cr-title">빈 구유</h2></div><button class="x" data-close>닫기</button></div>
+  <p id="cr-text"></p>
+  <p class="muted" id="cr-prayer"></p>
+  <div class="row"><button class="primary" id="cr-amen">아멘</button><button class="ghost" id="cr-hymn">고요한 밤 듣기</button></div>
+  <p class="muted" id="cr-msg"></p>
+</div>
+<!-- (v21) 부활 성야 빛의 예식: 들어오면 어둠이 13초에 걸쳐 걷힙니다 -->
+<div id="vigil" hidden></div>
+
 <!-- 내 모습 (v18: 꾸미기 확장) -->
 <div class="sheet short" id="sh-me" role="dialog" aria-label="내 모습">
   <div class="sh-head"><div><div class="eyebrow">내 모습</div><h2>거울 앞에서</h2></div><div class="row" style="gap:6px;flex-wrap:nowrap"><button class="x" id="me-random" type="button">무작위</button><button class="x" data-close>닫기</button></div></div>
   <div><label class="lbl" for="me-name">이름 또는 세례명</label><input type="text" id="me-name" maxlength="12" placeholder="예: 안나" autocomplete="off"></div>
+  <div><label class="lbl" for="me-feast">영명축일 <span id="me-feast-hint" class="muted" style="font-weight:400;margin-left:6px"></span></label><select id="me-feast"><option value="">선택 안 함</option></select><div class="row" id="me-feast-custom" hidden style="margin-top:6px"><select id="me-feast-m" aria-label="월"></select><select id="me-feast-d" aria-label="일"></select></div></div>
   <div><label class="lbl">옷차림</label><div class="seg" id="me-top"></div></div>
   <div><label class="lbl">옷 색 (맨 끝은 직접 고르기)</label><div class="sws" id="me-cloth"></div></div>
   <div><label class="lbl">아래옷 색</label><div class="sws" id="me-bottom"></div></div>
@@ -357,6 +374,7 @@ body.mass #joy{opacity:.35}
     <button id="mo-organ"><svg viewBox="0 0 24 24"><rect x="3" y="10" width="18" height="10" rx="1.5"/><path d="M7 3v7M12 2v8M17 4v6"/><path d="M8 14v6M12 14v6M16 14v6"/></svg>오르간<small>연주하기</small></button>
     <button id="mo-quiz"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 1-1 1.7"/><path d="M12 17v.5"/></svg>교리 퀴즈<small>어린이·청년</small></button>
     <button id="mo-photo"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><circle cx="12" cy="13.5" r="3.5"/><path d="M8 7l1.5-3h5L16 7"/></svg>기념사진<small>저장·공유</small></button>
+    <button id="mo-selfie"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M6.5 20a5.5 5.5 0 0 1 11 0"/></svg>내 모습 사진<small>앞에서 찍기</small></button>
     <button id="mo-prayers"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h12"/><path d="M11 7v6M8 10h6"/></svg>기도서<small>18가지</small></button>
     <button id="mo-confess"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M8 7h8M8 10h8M8 13h8"/><path d="M12 17v1"/></svg>고해소<small>양심 성찰</small></button>
     <button data-open="music"><svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>미사곡<small>성가대석</small></button>
@@ -366,7 +384,7 @@ body.mass #joy{opacity:.35}
   <p class="muted" id="hymn-now"></p>
   <p class="muted" id="snd-state"></p>
   <p class="muted" id="who-list"></p>
-  <p class="muted">오른쪽 아래 조이스틱으로 걷고, 바닥을 누르면 그곳으로 걸어가고, 신자석을 누르면 그 자리에 앉습니다. 벽의 성화와 십자가의 길, 성수대·방명록대·종줄·게시판·제대·감실·오르간, 문밖 마당의 성모자상·촛불 봉헌대·그네·미끄럼틀·공, 그리고 돌아다니는 수녀님과 강아지 우주·사과 가까이 가면 아래에 할 수 있는 일이 뜹니다. 입구 위 성가대석에서는 미사곡이 흐르고, 입구 왼쪽 고해소 앞에서는 양심 성찰을, 성요셉상·성모상·루르드 성모상·예수 성심상 앞에서는 그분들 이야기와 기도를 볼 수 있습니다. 하늘은 서초동의 실제 해와 달의 자리를, 비와 눈은 지금 날씨를 따릅니다. 입구 오른쪽 벽의 문으로 내려가면 지하 카페 꿈빠니스가 있고, 문밖 넓은 돌계단 아래가 마당입니다. 마당과 종탑, 밤하늘, 카페에는 숨은 재미 일곱 가지가 있어요(안내에서 몇 개 찾았는지 보입니다). 자체 주소의 경당에서는 지금 들어와 있는 형제자매가 실제로 보이고, 평화의 인사·촛불·종소리가 서로에게 전해집니다. 화면을 끌면 둘러보고, 오전 6시·정오·오후 6시에는 삼종기도 종이 울립니다.</p>
+  <p class="muted">오른쪽 아래 조이스틱으로 걷고, 바닥을 누르면 그곳으로 걸어가고, 신자석을 누르면 그 자리에 앉습니다. 벽의 성화와 십자가의 길, 성수대·방명록대·종줄·게시판·제대·감실·오르간, 문밖 마당의 성모자상·촛불 봉헌대·그네·미끄럼틀·공, 그리고 돌아다니는 수녀님과 강아지 우주·사과 가까이 가면 아래에 할 수 있는 일이 뜹니다. 입구 위 성가대석에서는 미사곡이 흐르고, 입구 왼쪽 고해소 앞에서는 양심 성찰을, 성요셉상·성모상·루르드 성모상·예수 성심상 앞에서는 그분들 이야기와 기도를 볼 수 있습니다. 하늘은 서초동의 실제 해와 달의 자리를, 비와 눈은 지금 날씨를 따릅니다. 입구 오른쪽 벽의 문으로 내려가면 지하 카페 꿈빠니스가 있고, 문밖 넓은 돌계단 아래가 마당입니다. 마당과 종탑, 밤하늘, 카페에는 숨은 재미 일곱 가지가 있어요(안내에서 몇 개 찾았는지 보입니다). 자체 주소의 경당에서는 지금 들어와 있는 형제자매가 실제로 보이고, 평화의 인사·촛불·종소리가 서로에게 전해집니다. 화면을 끌면 둘러보고, 오전 6시·정오·오후 6시에는 삼종기도 종이 울립니다. 대림·성탄 시기에는 제대 오른쪽에 구유가, 마당에 성탄 트리가 놓이고, 동방박사는 성탄부터 주님 공현까지 오른쪽 통로를 따라 구유로 갑니다. 재의 수요일엔 이마에 재를, 성지 주일엔 종려가지를 들고, 사순 제5주일부터는 성상이 보라 천으로 가려집니다. 「내 모습」에서 영명축일을 고르면 그날 축하를 받고 이름표에 ✦ 가 붙습니다.</p>
   <p class="muted">제대 뒤 벽의 성령 비둘기·놋쇠 광선·청동 십자고상은 서초동성당 제대 실황 화면을, 마당의 성모자상과 제대 양옆의 성요셉상·성모상·루르드 성모상은 본당에서 찍은 사진을 그대로 입힌 것입니다. 벽돌 벽·민트색 카펫·티파니 등·청동 십자가의 길·감실·주례석은 본당 소개 영상(서초동성당2)을 보고 본뜬 것입니다. 마당의 예수 성심상은 위키미디어 공용의 CC0(퍼블릭 도메인 기증) 사진이며, 성가대석의 미사곡은 유튜브 「데일리 가톨릭」의 천사미사곡 영상, 날씨는 Open-Meteo 자료입니다.</p>
   <p class="muted" id="admin-link" hidden><a href="admin/" style="color:var(--accent)">담당자 관리 페이지</a> · 공지 올리기, 방명록 검수</p>
 </div>
@@ -530,6 +548,9 @@ var CAN_EMBED = ROOM.embed === true;
 var SHARED = !!(ROOM.supabaseUrl && ROOM.supabaseKey);
 var RM = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 var $ = function(s){ return document.querySelector(s); };
+// (v21) 점검용 시각: 주소에 ?when=2026-12-24T19:00 을 주면 전례 시기·구유·영명축일을 그 시각으로 봅니다 (그 시각부터 흘러감)
+var WHEN = (function(){ try { var m = /[?&]when=([^&#]+)/.exec(location.search); if (!m) return null; var d = new Date(decodeURIComponent(m[1])); return isNaN(d.getTime()) ? null : { t0: d.getTime(), r0: Date.now() }; } catch (e) { return null; } })();
+function nowDate(){ return WHEN ? new Date(WHEN.t0 + (Date.now() - WHEN.r0)) : new Date(); }
 // ---------- 오늘의 말씀 · 오늘의 성인 · 전례 시기 ----------
 var VERSES = [
   ['나는 길이요 진리요 생명이다.', '요한 14,6'], ['고생하며 무거운 짐을 진 너희는 모두 나에게 오너라. 내가 너희에게 안식을 주겠다.', '마태 11,28'], ['너희는 세상의 빛이다.', '마태 5,14'],
@@ -544,22 +565,23 @@ var VERSES = [
   ['너희 아버지께서는 너희가 청하기도 전에 무엇이 필요한지 알고 계신다.', '마태 6,8'], ['주님께 네 길을 맡기고 그분을 신뢰하여라.', '시편 37,5'], ['그 빛이 어둠 속에서 비치고 있지만 어둠은 그를 깨닫지 못하였다.', '요한 1,5']
 ];
 var SAINTS = { '1-1': '천주의 성모 마리아 대축일', '1-6': '주님 공현 대축일', '1-25': '성 바오로 사도의 회심 축일', '1-31': '성 요한 보스코 사제 기념일', '2-2': '주님 봉헌 축일', '2-11': '루르드의 복되신 동정 마리아 기념일', '3-19': '복되신 동정 마리아의 배필 성 요셉 대축일', '3-25': '주님 탄생 예고 대축일', '4-25': '성 마르코 복음사가 축일', '4-29': '시에나의 성녀 가타리나 기념일', '5-1': '노동자 성 요셉 기념일', '5-31': '복되신 동정 마리아의 방문 축일', '6-13': '파도바의 성 안토니오 기념일', '6-24': '성 요한 세례자 탄생 대축일', '6-29': '성 베드로와 성 바오로 사도 대축일', '7-5': '한국 성직자들의 수호자 성 김대건 안드레아 사제 순교자 대축일', '7-22': '성녀 마리아 막달레나 축일', '7-25': '성 야고보 사도 축일', '7-26': '성 요아킴과 성녀 안나 기념일', '7-31': '성 이냐시오 데 로욜라 기념일', '8-6': '주님의 거룩한 변모 축일', '8-8': '성 도미니코 사제 기념일', '8-10': '성 라우렌시오 부제 순교자 축일', '8-11': '성녀 클라라 동정 기념일', '8-15': '성모 승천 대축일', '8-27': '성녀 모니카 기념일', '8-28': '성 아우구스티노 주교 학자 기념일', '9-8': '복되신 동정 마리아 탄생 축일', '9-14': '성 십자가 현양 축일', '9-20': '성 김대건 안드레아 사제와 성 정하상 바오로와 동료 순교자들 대축일', '9-21': '성 마태오 사도 복음사가 축일', '9-29': '성 미카엘, 성 가브리엘, 성 라파엘 대천사 축일', '10-1': '아기 예수의 성녀 데레사 기념일', '10-2': '수호천사 기념일', '10-4': '아시시의 성 프란치스코 기념일', '10-7': '묵주기도의 복되신 동정 마리아 기념일', '10-15': '아빌라의 성녀 데레사 기념일', '10-18': '성 루카 복음사가 축일', '10-28': '성 시몬과 성 유다 사도 축일', '11-1': '모든 성인 대축일', '11-2': '위령의 날', '11-9': '라테라노 대성전 봉헌 축일', '11-11': '투르의 성 마르티노 주교 기념일', '11-21': '복되신 동정 마리아 자헌 기념일', '11-22': '성녀 체칠리아 동정 순교자 기념일', '11-30': '성 안드레아 사도 축일', '12-3': '성 프란치스코 하비에르 사제 기념일', '12-8': '원죄 없이 잉태되신 복되신 동정 마리아 대축일', '12-13': '성녀 루치아 동정 순교자 기념일', '12-25': '주님 성탄 대축일', '12-26': '성 스테파노 첫 순교자 축일', '12-27': '성 요한 사도 복음사가 축일', '12-28': '죄 없는 아기 순교자들 축일' };
-function dayOfYear(){ var d = new Date(); return Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 86400000); }
+function dayOfYear(){ var d = nowDate(); return Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 86400000); }
 function dailyVerse(){ return VERSES[dayOfYear() % VERSES.length]; }
-function todaySaint(){ var d = new Date(); return SAINTS[(d.getMonth() + 1) + '-' + d.getDate()] || null; }
-function adventInfo(now){ now = now || new Date(); var y = now.getFullYear(), d = new Date(y, 11, 24); while (d.getDay() !== 0) d.setDate(d.getDate() - 1); var start = new Date(d); start.setDate(d.getDate() - 21); var xmas = new Date(y, 11, 25); if (now < start || now >= xmas) return null; return { week: Math.min(4, Math.floor((now - start) / (7 * 86400000)) + 1) }; }
+function todaySaint(){ var d = nowDate(); return SAINTS[(d.getMonth() + 1) + '-' + d.getDate()] || null; }
+function adventInfo(now){ now = now || nowDate(); var y = now.getFullYear(), d = new Date(y, 11, 24); while (d.getDay() !== 0) d.setDate(d.getDate() - 1); var start = new Date(d); start.setDate(d.getDate() - 21); var xmas = new Date(y, 11, 25); if (now < start || now >= xmas) return null; return { week: Math.min(4, Math.floor((now - start) / (7 * 86400000)) + 1) }; }
 // ---------- 전례력: 부활 날짜 계산 → 시기·전례색 (제대 앞 장식천·독서대 천·부활초가 자동으로 바뀝니다) ----------
 function easterDate(y){ var a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451), mo = Math.floor((h + l - 7 * m + 114) / 31), da = ((h + l - 7 * m + 114) % 31) + 1; return new Date(y, mo - 1, da); }
 var FEAST_COLOR = { '1-1': 'white', '1-6': 'white', '2-2': 'white', '3-19': 'white', '3-25': 'white', '6-24': 'white', '6-29': 'red', '7-5': 'red', '8-6': 'white', '8-15': 'white', '9-14': 'red', '9-20': 'red', '9-21': 'red', '9-29': 'white', '10-18': 'red', '10-28': 'red', '11-1': 'white', '11-2': 'purple', '11-30': 'red', '12-8': 'white', '12-26': 'red', '12-27': 'white', '12-28': 'red' };
 function liturgy(now){ // { season, color, label }
-  now = now || new Date(); var y = now.getFullYear(), D = 86400000, t = new Date(y, now.getMonth(), now.getDate()).getTime();
+  now = now || nowDate(); var y = now.getFullYear(), D = 86400000, t = new Date(y, now.getMonth(), now.getDate()).getTime();
   var easter = easterDate(y).getTime(), ash = easter - 46 * D, palm = easter - 7 * D, thu = easter - 3 * D, fri = easter - 2 * D, sat = easter - D, pent = easter + 49 * D, laetare = easter - 21 * D;
   var xmas = new Date(y, 11, 25).getTime(), bapt = new Date(y, 0, 7); while (bapt.getDay() !== 0) bapt.setDate(bapt.getDate() + 1); // 주님 세례 축일: 1월 7일 이후 첫 주일(근사)
+  var epi = new Date(y, 0, 2); while (epi.getDay() !== 0) epi.setDate(epi.getDate() + 1); var eveX = now.getMonth() === 11 && now.getDate() === 24 && now.getHours() >= 16; // (v21) 주님 공현(1월 2~8일 주일) · 성탄 전야 미사(24일 16시부터 성탄)
   var key = (now.getMonth() + 1) + '-' + now.getDate(), ad = adventInfo(now), r;
-  if (t >= xmas || t <= bapt.getTime()) r = { season: 'christmas', color: 'white', label: '성탄 시기' };
+  if (t >= xmas || t <= bapt.getTime() || eveX) r = { season: 'christmas', color: 'white', label: eveX ? '주님 성탄 대축일 밤' : t === xmas ? '주님 성탄 대축일' : t === epi.getTime() ? '주님 공현 대축일' : t === bapt.getTime() ? '주님 세례 축일' : '성탄 시기' };
   else if (ad) r = { season: 'advent', color: ad.week === 3 ? 'rose' : 'purple', label: '대림 제' + ad.week + '주간' };
   else if (t === fri) r = { season: 'triduum', color: 'red', label: '주님 수난 성금요일' };
-  else if (t === sat) r = { season: 'triduum', color: 'purple', label: '성토요일' };
+  else if (t === sat) r = now.getHours() >= 18 ? { season: 'easter', color: 'white', label: '부활 성야' } : { season: 'triduum', color: 'purple', label: '성토요일' }; // (v21) 성야 미사부터 부활
   else if (t === thu) r = { season: 'triduum', color: 'white', label: '주님 만찬 성목요일' };
   else if (t === palm) r = { season: 'lent', color: 'red', label: '주님 수난 성지 주일' };
   else if (t >= ash && t < easter) r = { season: 'lent', color: t === laetare ? 'rose' : 'purple', label: t === ash ? '재의 수요일' : t < ash + 4 * D ? '사순 시기' : '사순 제' + (Math.floor((t - ash - 4 * D) / (7 * D)) + 1) + '주간' };
@@ -1155,6 +1177,33 @@ function oakDoorTex(mirror){
 })();
 // ---------- 전례색 장식: 제대 앞 장식천·독서대 천, 부활 시기의 부활초 ----------
 var LIT = liturgy();
+// ---------- (v21) 전례 시기 연출 판단: 구유(대림~주님 세례)·동방박사(성탄~공현 이동)·마당 성탄 트리·제대 포인세티아·재의 수요일 재·성지 주일 종려가지·수난 시기 보라 천·부활 성야 ----------
+//   주소에 ?when=2026-12-24T19:00 을 주면 그 시각으로 봅니다(점검용, nowDate()). 모두 들어올 때 한 번 정해집니다.
+var SEASON = (function(){
+  var now = nowDate(), y = now.getFullYear(), D = 86400000, t0 = new Date(y, now.getMonth(), now.getDate()).getTime(), hr = now.getHours();
+  var xy = now.getMonth() === 0 ? y - 1 : y; // 1월이면 지난해 성탄 기준
+  var xmas = new Date(xy, 11, 25).getTime(), eve = new Date(xy, 11, 24, 16).getTime();
+  var epi = new Date(xy + 1, 0, 2); while (epi.getDay() !== 0) epi.setDate(epi.getDate() + 1);       // 주님 공현 대축일: 1월 2~8일 사이 주일(한국)
+  var bapt = new Date(xy + 1, 0, 7); while (bapt.getDay() !== 0) bapt.setDate(bapt.getDate() + 1);   // 주님 세례 축일(근사): 성탄 시기의 끝
+  var ad = adventInfo(now), xmasTime = now.getTime() >= eve && t0 <= bapt.getTime();
+  var kings = now.getTime() >= xmas && t0 <= bapt.getTime(), kf = kings ? Math.max(0, Math.min(1, (now.getTime() - xmas) / (epi.getTime() - xmas))) : 0;
+  var easter = easterDate(y).getTime(), ash = easter - 46 * D, palm = easter - 7 * D, lent5 = easter - 14 * D, fri = easter - 2 * D, sat = easter - D;
+  var vigil = (t0 === sat && hr >= 18) || (t0 === easter && hr < 6), veil = t0 >= lent5 && t0 <= sat && !vigil;
+  return { creche: !!ad || xmasTime, baby: xmasTime, kings: kings, kf: kf, epiphany: kings && t0 >= epi.getTime(), tree: !!ad || xmasTime, poinsettia: xmasTime,
+    xmasEve: now.getMonth() === 11 && now.getDate() === 24 && hr >= 16, xmasDay: now.getMonth() === 11 && now.getDate() === 25,
+    ash: t0 === ash, palm: t0 === palm, veil: veil, veilCross: veil && t0 < fri, vigil: vigil, epi: epi, bapt: bapt };
+})();
+// 아바타에 시기 표식 (buildAvatar 끝에서 부릅니다): 재의 수요일엔 이마에 재 십자, 성지 주일엔 오른손에 종려가지
+function seasonDress(grp, cfg){
+  if (typeof SEASON === 'undefined' || !SEASON || !grp || !grp.userData || !grp.userData.upper) return; var u = grp.userData;
+  if (SEASON.ash) { var am = toonMat(0x2b2420), ay = HEAD_Y + 0.04, hz = -(HR + 0.022); // 앞머리(bangs) 위에 얹히도록 머리 표면보다 조금 앞
+    [[0.014, 0.064], [0.048, 0.014]].forEach(function(s){ var m = new THREE.Mesh(new THREE.BoxGeometry(s[0], s[1], 0.004), am); m.position.set(0, ay, hz); m.userData.baseY = ay; grp.add(m); u.upper.push(m); }); u.ash = true; }
+  if (SEASON.palm && u.arms && u.arms.r && u.arms.r.userData.elbow) { // 종려가지: 납작한 잎 셋이 부채꼴로, 줄기는 손안에
+    if (!AG.palm) AG.palm = new THREE.ConeGeometry(0.045, 0.42, 4); var pg = new THREE.Group(), lm = toonMat(0x4f8c3e); pg.position.set(0.01, -0.12, -0.02); pg.rotation.x = -0.35;
+    [-0.5, 0, 0.5].forEach(function(a){ var leaf = new THREE.Mesh(AG.palm, lm); leaf.scale.set(1, 1, 0.18); leaf.rotation.z = a; leaf.position.set(-Math.sin(a) * 0.17, Math.cos(a) * 0.17 - 0.04, 0); pg.add(leaf); });
+    var stem = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.01, 0.3, 5), toonMat(0x6b8a3a)); stem.position.set(0, -0.08, 0); pg.add(stem); u.arms.r.userData.elbow.add(pg); u.palm = true; }
+}
+
 (function liturgicalDecor(){
   var col = LIT_COLORS[LIT.color] || LIT_COLORS.green, cloth = new THREE.MeshStandardMaterial({ color: col, roughness: 0.85 }), gold = M.goldS;
   mesh(G.box(2.4, 0.24, 0.025), cloth, 0, 1.45, -12.03, 'altar'); mesh(G.box(2.4, 0.03, 0.03), gold, 0, 1.335, -12.03); // 제대 앞 장식천(안테펜디움)
@@ -1162,7 +1211,7 @@ var LIT = liturgy();
   (function(){ var c = document.createElement('canvas'); c.width = 64; c.height = 64; var g = c.getContext('2d'); g.fillStyle = '#' + ('000000' + col.toString(16)).slice(-6); g.fillRect(0, 0, 64, 64); g.strokeStyle = '#d4ad52'; g.lineWidth = 4; g.beginPath(); g.moveTo(32, 12); g.lineTo(32, 52); g.moveTo(18, 26); g.lineTo(46, 26); g.stroke();
     var t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; mesh(new THREE.PlaneGeometry(0.3, 0.3), new THREE.MeshBasicMaterial({ map: t }), -3.6, 1.25, -11.115); })();
   if (LIT.season === 'easter' || LIT.season === 'pentecost') { // 부활초: 붉은 십자가와 알파·오메가, 올해 연도
-    var c = document.createElement('canvas'); c.width = 128; c.height = 512; var g = c.getContext('2d'); g.fillStyle = '#f6f1e6'; g.fillRect(0, 0, 128, 512); g.strokeStyle = '#b0242a'; g.lineWidth = 7; g.beginPath(); g.moveTo(64, 150); g.lineTo(64, 290); g.moveTo(30, 200); g.lineTo(98, 200); g.stroke(); g.fillStyle = '#b08d3c'; g.font = '600 34px serif'; g.textAlign = 'center'; g.fillText('Α', 64, 130); g.fillText('Ω', 64, 330); g.font = '600 26px sans-serif'; g.fillText(String(new Date().getFullYear()).slice(0, 2), 64, 390); g.fillText(String(new Date().getFullYear()).slice(2), 64, 420);
+    var c = document.createElement('canvas'); c.width = 128; c.height = 512; var g = c.getContext('2d'); g.fillStyle = '#f6f1e6'; g.fillRect(0, 0, 128, 512); g.strokeStyle = '#b0242a'; g.lineWidth = 7; g.beginPath(); g.moveTo(64, 150); g.lineTo(64, 290); g.moveTo(30, 200); g.lineTo(98, 200); g.stroke(); g.fillStyle = '#b08d3c'; g.font = '600 34px serif'; g.textAlign = 'center'; g.fillText('Α', 64, 130); g.fillText('Ω', 64, 330); g.font = '600 26px sans-serif'; var py = String(nowDate().getFullYear()); g.fillText(py.slice(0, 2), 64, 390); g.fillText(py.slice(2), 64, 420);
     var t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; var px = -1.5, pz = -13.7;
     mesh(new THREE.CylinderGeometry(0.17, 0.2, 0.08, 16), M.brass, px, 0.58, pz); mesh(new THREE.CylinderGeometry(0.03, 0.04, 0.6, 10), M.brass, px, 0.92, pz); mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.04, 16), M.brass, px, 1.24, pz);
     var cd = mesh(new THREE.CylinderGeometry(0.055, 0.055, 1.1, 20), new THREE.MeshStandardMaterial({ map: t, roughness: 0.6 }), px, 1.8, pz); cd.rotation.y = Math.PI / 2;
@@ -1454,6 +1503,7 @@ function buildAvatar(cfg){
   setPose(grp, 'stand');
   blobShadow(grp, 0, 0, 0, 0.66, 0.56, 0.4);
   var sz = !nun && cfg.size && SIZE_SCALE[cfg.size] ? SIZE_SCALE[cfg.size] : 1; if (sz !== 1) grp.scale.set(sz, sz, sz);
+  if (typeof seasonDress === 'function') seasonDress(grp, cfg); // (v21) 재의 수요일 재 · 성지 주일 종려가지
   return grp;
 }
 function setPose(grp, pose){
@@ -2248,6 +2298,7 @@ function interact(k){
   else if (k === 'mary' || k === 'joseph' || k === 'lourdes' || k === 'heart') openSaint(k); // (v18) 성상 이야기와 기도 (「인사드리기」가 예전의 절)
   else if (k === 'rack') openSheet('candle');
   else if (k === 'tabernacle') startAdoration();
+  else if (k === 'creche') openCreche(); // (v21) 구유 앞에 무릎 꿇고
   else if (k === 'altar') openSheet('pray');
   else if (k === 'screen') openSheet('live');
   else if (k === 'ball') throwBall();
@@ -2389,7 +2440,7 @@ function updateTags(){
     var key = 'a' + i, el = tagEls[key];
     if (!el) { el = document.createElement('div'); el.className = 'tag'; box.appendChild(el); tagEls[key] = el; }
     var say = (says[key] && says[key] > now) || (av.sayT && av.sayT > now);
-    el.className = 'tag' + (say ? ' say' : ''); el.textContent = say ? (av.sayText || '평화를 빕니다') : av.name;
+    el.className = 'tag' + (say ? ' say' : '') + (av.feast && !say ? ' feast' : ''); el.textContent = say ? (av.sayText || '평화를 빕니다') : ((av.feast ? '✦ ' : '') + av.name); // (v21) 영명축일 ✦
     el.style.left = ((tmpP.x + 1) / 2 * w) + 'px'; el.style.top = ((1 - tmpP.y) / 2 * h) + 'px';
     el.style.opacity = d > 5 ? String(Math.max(0, (7 - d) / 2)) : '1';
     seen[key] = true;
@@ -2397,12 +2448,13 @@ function updateTags(){
   Object.keys(tagEls).forEach(function(k){ if (!seen[k]) { tagEls[k].remove(); delete tagEls[k]; } });
 }
 function peace(){
-  bow(myAvatar); rtSend('peace');
-  var el = document.createElement('div'); el.className = 'amen'; el.textContent = '평화를 빕니다'; el.style.fontSize = '22px'; document.body.appendChild(el); setTimeout(function(){ el.remove(); }, 1900);
+  var feNear = avatars.some(function(av){ return av.feast && Math.hypot(av.g.position.x - myAvatar.position.x, av.g.position.z - myAvatar.position.z) <= 3.2; }); // (v21) 가까이에 영명축일인 분이 있으면 축하 인사
+  bow(myAvatar); rtSend('peace', feNear ? { fe: 1 } : undefined);
+  var el = document.createElement('div'); el.className = 'amen'; el.textContent = feNear ? '영명축일 축하합니다!' : '평화를 빕니다'; el.style.fontSize = '22px'; document.body.appendChild(el); setTimeout(function(){ el.remove(); }, 1900);
   initAudio(); chime();
   fxSparkle(myAvatar.position.x, myAvatar.position.y + 1.35, myAvatar.position.z, { n: 18, color: 0xfff0c0, spread: 0.6, rise: 0.6, dur: 1800 });
   var n = 0;
-  avatars.forEach(function(av, i){ var d = Math.hypot(av.g.position.x - myAvatar.position.x, av.g.position.z - myAvatar.position.z); if (d <= 3.2) { n++; setTimeout(function(){ bow(av.g); says['a' + i] = performance.now() + 2200; fxSparkle(av.g.position.x, av.g.position.y + 1.3, av.g.position.z, { n: 10, color: 0xfff0c0, spread: 0.4, rise: 0.5, dur: 1500 }); }, 350 + Math.random() * 500); } });
+  avatars.forEach(function(av, i){ var d = Math.hypot(av.g.position.x - myAvatar.position.x, av.g.position.z - myAvatar.position.z); if (d <= 3.2) { n++; setTimeout(function(){ bow(av.g); says['a' + i] = performance.now() + 2200; if (av.feast) fxPetals(av.g.position.x, av.g.position.y + 2.0, av.g.position.z, 14); fxSparkle(av.g.position.x, av.g.position.y + 1.3, av.g.position.z, { n: 10, color: 0xfff0c0, spread: 0.4, rise: 0.5, dur: 1500 }); }, 350 + Math.random() * 500); } });
   if (!n) toast('가까이에 아무도 없습니다. 신자석에 앉아 옆 사람과 나눠보세요.', 2600);
 }
 
@@ -3053,6 +3105,114 @@ $('#ang-pray').addEventListener('click', function(){ initAudio(); bell(0.5); fxS
     if (k < ad.week) { var f = mesh(G.flame, M.flame, cx, y0 + 1.42, cz); f.scale.set(0.8, 1.3, 0.8); var gl = glow(0.5, 0.5); gl.position.set(cx, y0 + 1.44, cz); scene.add(gl); flames.push({ f: f, g: gl, s: 0.5, o: 0.5, ph: Math.random() * 6, sx: 0.8, born: 0 }); } }
 })();
 
+// ---------- (v21) 전례 시기 장식: 구유·동방박사·마당 성탄 트리·포인세티아·수난 시기 보라 천 · 구유 앞 경배 · 부활 성야 빛의 예식 ----------
+var CRECHE = { on: false, grp: null, kings: [], tree: null, lights: [], star: null, treeStar: null, treeLight: null, light: null, veils: [], poinsettia: [] };
+function sMat(c, r){ return cmat(c, r === undefined ? 0.9 : r); }
+function faceAng(x, z, tx, tz){ return Math.atan2(-(tx - x), -(tz - z)); } // 아바타(얼굴이 -z)가 (tx,tz)를 보는 rotation.y
+function figure(cfg, x, z, rotY, scale, pose){ var g = buildAvatar(cfg); g.position.set(x, 0, z); g.rotation.y = rotY; g.scale.setScalar(scale); if (pose) setPose(g, pose); return g; }
+function holdStaff(g){ var st = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.015, 1.05, 6), toonMat(0x6b4a2a)); st.position.set(0.27, 0.72, -0.14); g.add(st); if (g.userData.arms) g.userData.arms.r.rotation.x = 0.55; return st; }
+function crownOn(g){ var u = g.userData, gm = toonMat(0xd9b14d); var ring = new THREE.Mesh(new THREE.CylinderGeometry(0.125, 0.12, 0.075, 10, 1, true), new THREE.MeshToonMaterial({ color: 0xd9b14d, side: THREE.DoubleSide })); ring.position.set(0, HEAD_Y + 0.15, 0); ring.userData.baseY = HEAD_Y + 0.15; g.add(ring); u.upper.push(ring);
+  for (var i = 0; i < 5; i++) { var a = i / 5 * Math.PI * 2, c = new THREE.Mesh(new THREE.ConeGeometry(0.022, 0.055, 4), gm); c.position.set(Math.cos(a) * 0.118, HEAD_Y + 0.21, Math.sin(a) * 0.118); c.userData.baseY = HEAD_Y + 0.21; g.add(c); u.upper.push(c); } }
+function holdGift(g, kind){ var u = g.userData; if (!u.arms) return; var m = kind === 0 ? new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.08, 0.09), toonMat(0xe0b84a)) : kind === 1 ? new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.05, 0.11, 8), toonMat(0xcfc6b4)) : new THREE.Mesh(new THREE.SphereGeometry(0.055, 8, 6), toonMat(0x7a4f9a));
+  m.position.set(-0.09, -0.16, -0.05); u.arms.r.userData.elbow.add(m); u.arms.r.rotation.x = 1.25; u.arms.l.rotation.x = 1.0; }
+(function buildSeasonDecor(){
+  var CX = 5.6, CZ = -11.4, CY = 0.54; // 구유: 제대 오른쪽 앞, 제단 윗단 위 (성모상 7.6,-9.4 · 감실 4.2,-8.2 접근점과 겹치지 않는 자리)
+  if (SEASON.creche) {
+    CRECHE.on = true; var g = new THREE.Group(); g.position.set(CX, CY, CZ); g.rotation.y = -0.22; scene.add(g); CRECHE.grp = g;
+    function add(m, x, y, z){ m.position.set(x, y, z); g.add(m); return m; }
+    var straw = sMat(0xc9a35a, 1), wood = M.darkwood, hay = sMat(0xd8b86a, 1);
+    add(new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.04, 1.2), straw), 0, 0.02, 0);                                                                   // 짚 바닥
+    [[-0.85, -0.5, 1.08], [0.85, -0.5, 1.08], [-0.85, 0.5, 1.3], [0.85, 0.5, 1.3]].forEach(function(p){ add(new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.055, p[2], 7), wood), p[0], p[2] / 2, p[1]); }); // 기둥 넷(앞이 높음)
+    add(new THREE.Mesh(new THREE.BoxGeometry(1.76, 0.95, 0.04), wood), 0, 0.52, -0.52);                                                             // 뒷벽 널
+    var roof = add(new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.06, 1.42), sMat(0x8a6a3a, 1)), 0, 1.3, -0.02); roof.rotation.x = 0.17; var thatch = add(new THREE.Mesh(new THREE.BoxGeometry(2.14, 0.05, 1.46), straw), 0, 1.35, -0.02); thatch.rotation.x = 0.17; // 이엉 지붕(뒤로 기울어짐)
+    add(new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.5, 5), wood), 0, 1.6, 0.45);                                                      // 별 장대
+    var star = add(new THREE.Mesh(new THREE.OctahedronGeometry(0.11, 0), new THREE.MeshStandardMaterial({ color: 0xffe9a8, emissive: 0xffd36a, emissiveIntensity: SEASON.baby ? 1.2 : 0.3, roughness: 0.4 })), 0, 1.9, 0.45); star.scale.set(1, 1.5, 0.4);
+    var sg = glow(SEASON.baby ? 1.8 : 0.7, SEASON.baby ? 0.85 : 0.3); sg.material.color.setHex(0xfff1c8); sg.position.set(0, 1.9, 0.45); g.add(sg); CRECHE.star = { m: star, g: sg };
+    [-1, 1].forEach(function(s){ var l1 = add(new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.5, 0.04), wood), s * 0.2, 0.25, 0.12); l1.rotation.x = 0.5; var l2 = add(new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.5, 0.04), wood), s * 0.2, 0.25, 0.12); l2.rotation.x = -0.5; }); // 말구유 X자 다리
+    add(new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.17, 0.3), sMat(0x6b4a2c, 0.9)), 0, 0.42, 0.12);
+    var hy = add(new THREE.Mesh(new THREE.SphereGeometry(0.2, 10, 7), hay), 0, 0.48, 0.12); hy.scale.set(1.3, 0.35, 0.8);
+    if (SEASON.baby) { // 아기 예수: 흰 강보에 싸여 누움, 금빛 후광, 따뜻한 빛
+      var baby = new THREE.Group(); baby.position.set(0, 0.56, 0.12); g.add(baby);
+      var sw = new THREE.Mesh(new THREE.SphereGeometry(0.085, 10, 8), toonMat(0xf6f1e6)); sw.scale.set(1, 0.65, 1.7); baby.add(sw);
+      var hd = new THREE.Mesh(new THREE.SphereGeometry(0.06, 10, 8), toonMat(SKINS[1])); hd.position.set(0, 0.03, -0.16); baby.add(hd);
+      var halo = new THREE.Mesh(new THREE.TorusGeometry(0.07, 0.008, 6, 20), toonMat(0xd9b14d)); halo.position.set(0, 0.07, -0.2); halo.rotation.x = Math.PI / 2 - 0.4; baby.add(halo);
+      var pl = new THREE.PointLight(0xffe2b0, 0.9, 4.5); pl.position.set(0, 1.0, 0.3); g.add(pl); CRECHE.light = pl;
+      var bg = glow(1.1, 0.45); bg.material.color.setHex(0xffe6b8); bg.position.set(0, 0.62, 0.12); g.add(bg);
+    }
+    var F = 0.62; // 구유 인물 크기 (아바타 1.4 m → 0.87 m)
+    g.add(figure({ top: 'plain', clothHex: 0x3f6cb8, bottom: 0xf1ebdd, skirt: true, veil: true, hair: 'long', hairc: 2, face: 'closed', skin: 1 }, -0.42, -0.1, faceAng(-0.42, -0.1, 0, 0.12), F, 'kneel')); // 마리아
+    var jo = figure({ top: 'plain', clothHex: 0x7a5236, bottom: 0x4a3828, hair: 'short', hairc: 0, face: 'smile', skin: 2, bangs: false }, 0.5, -0.12, faceAng(0.5, -0.12, 0, 0.12), F); holdStaff(jo); g.add(jo); // 요셉
+    function beast(x, z, body, head, kind){ var b = new THREE.Group(); b.position.set(x, 0, z); b.rotation.y = Math.atan2(-(0.12 - z), 0 - x); g.add(b); var bm = toonMat(body), hm = toonMat(head); // 머리가 +x: 구유를 보도록
+      var bd = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.3, 0.26), bm); bd.position.y = 0.36; b.add(bd); [[-0.17, -0.08], [0.17, -0.08], [-0.17, 0.08], [0.17, 0.08]].forEach(function(l){ var lg = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.22, 0.07), bm); lg.position.set(l[0], 0.11, l[1]); b.add(lg); });
+      var hd = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.2, 0.22), hm); hd.position.set(0.3, 0.42, 0); b.add(hd);
+      if (kind === 'ox') [-1, 1].forEach(function(s){ var h = new THREE.Mesh(new THREE.ConeGeometry(0.025, 0.12, 5), toonMat(0xe9e2d2)); h.position.set(0.28, 0.56, s * 0.1); h.rotation.z = -0.4; b.add(h); });
+      else [-1, 1].forEach(function(s){ var e = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.16, 0.06), hm); e.position.set(0.26, 0.58, s * 0.08); e.rotation.x = s * 0.3; b.add(e); });
+      var tl = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.2, 0.03), hm); tl.position.set(-0.26, 0.3, 0); tl.rotation.z = 0.3; b.add(tl); return b; }
+    beast(-0.62, -0.35, 0x7a4a2a, 0x5a3620, 'ox'); beast(0.62, -0.35, 0x8a8580, 0x6e6964, 'donkey');
+    function sheep(x, z, rot){ var s = new THREE.Group(); s.position.set(x, 0, z); s.rotation.y = rot; g.add(s); var wm = toonMat(0xf3efe6), dm = toonMat(0x3a3028); var bd = new THREE.Mesh(new THREE.SphereGeometry(0.15, 10, 8), wm); bd.scale.set(1.3, 1, 1); bd.position.y = 0.24; s.add(bd); var hd = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.09), dm); hd.position.set(0.2, 0.26, 0); s.add(hd); [[-0.08, -0.06], [0.08, -0.06], [-0.08, 0.06], [0.08, 0.06]].forEach(function(l){ var lg = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.14, 0.035), dm); lg.position.set(l[0], 0.07, l[1]); s.add(lg); }); return s; }
+    if (SEASON.baby) { var sh = figure({ top: 'plain', clothHex: 0x9a7b4f, bottom: 0x6b5634, hat: 'bucket', hatHex: 0x6b4a2a, hair: 'short', hairc: 0, skin: 2, bangs: false }, -1.0, 0.42, faceAng(-1.0, 0.42, 0, 0.12), F); holdStaff(sh); g.add(sh); sheep(-0.78, 0.66, -0.6); sheep(0.88, 0.52, -2.4); } // 목자와 양 둘
+    if (SEASON.kings) { // 동방박사 셋: 성탄부터 공현까지 오른쪽 통로(입구 → 제단)를 날마다 조금씩 내려와 구유 앞 단에 섭니다
+      var KC = [[0xa0202a, 0xd9b14d], [0x2b5f9e, 0xe6d9a8], [0x6a3f8e, 0xc99a4a]], P0 = [6.9, 13.2], P1 = [6.9, -8.9], END = [[4.9, 0.36, -10.25], [5.6, 0.36, -10.35], [6.3, 0.36, -10.25]];
+      for (var i = 0; i < 3; i++) (function(i){ var k = buildAvatar({ top: 'plain', clothHex: KC[i][0], bottom: KC[i][1], hair: i === 1 ? 'buzz' : 'short', hairc: i === 2 ? 0 : 1, skin: [1, 4, 2][i], face: 'smile', bangs: false }); crownOn(k); holdGift(k, i); k.scale.setScalar(0.72);
+        var f = Math.max(0, Math.min(1, SEASON.kf - i * 0.04)), x, y, z, rot, s1 = 0.86, lat = (i - 1) * 0.55;
+        if (SEASON.epiphany || f >= 1) { x = END[i][0]; y = END[i][1]; z = END[i][2]; rot = faceAng(x, z, CX, CZ); }
+        else if (f < s1) { var u = f / s1; x = P0[0] + lat; z = P0[1] + (P1[1] - P0[1]) * u; y = 0; rot = 0; }
+        else { var v = (f - s1) / (1 - s1); x = P1[0] + lat + (END[i][0] - P1[0] - lat) * v; z = P1[1] + (END[i][2] - P1[1]) * v; y = END[i][1] * v; rot = faceAng(x, z, END[i][0], END[i][2]); }
+        k.position.set(x, y, z); k.rotation.y = rot; k.userData.king = i; scene.add(k); CRECHE.kings.push(k); })(i);
+    }
+    if (SEASON.poinsettia) { [-1.7, 1.7].forEach(function(px){ var fl = flowers(px, 0.54, -10.8, 9, [M.petalR]); fl.scale.setScalar(0.95); CRECHE.poinsettia.push(fl); }); } // 성탄 포인세티아
+    OBJ.creche = { name: '구유', verb: SEASON.baby ? '아기 예수님께 경배' : '구유 앞에 머물기', at: [CX, CZ], go: [5.6, -9.3], range: 2.8, hint: [CX, 2.25, CZ] };
+    (function(){ var o = OBJ.creche, s = glow(0.28, 0.75); s.material.color.setHex(0xe2a94b); s.position.set(o.hint[0], o.hint[1], o.hint[2]); s.userData.action = 'creche'; s.userData.baseY = o.hint[1]; scene.add(s); interactables.push(s); hints.creche = s; })();
+  }
+  if (SEASON.tree) { // 마당 성탄 트리: 돌계단 아래 오른쪽 (13.2, 25.0). 밤에 꼬마전구가 깜빡이고, 눈이 오면 가지가 희어집니다(M.pine)
+    var TX = 13.2, TZ = 25.0, tg = new THREE.Group(); tg.position.set(TX, groundY(TX, TZ), TZ); scene.add(tg); CRECHE.tree = tg;
+    var trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.2, 0.9, 7), M.bark); trunk.position.y = 0.45; tg.add(trunk);
+    var R = rnd(2112), cones = [[1.75, 1.5, 0.6], [1.45, 1.4, 1.5], [1.1, 1.3, 2.4], [0.7, 1.2, 3.25]]; // [반지름, 높이, 밑면 y]
+    cones.forEach(function(c){ var m = new THREE.Mesh(new THREE.ConeGeometry(c[0], c[1], 9), M.pine); m.position.y = c[2] + c[1] / 2; tg.add(m); });
+    var ORN = [0xc0262e, 0xd9b14d, 0x2b5f9e, 0xf1ebdd];
+    for (var k = 0; k < 44; k++) { var ci = cones[k % 4], a = R() * Math.PI * 2, hg = 0.12 + R() * 0.7, rr = ci[0] * (1 - hg) + 0.03, yy = ci[2] + hg * ci[1]; var o = new THREE.Mesh(new THREE.SphereGeometry(0.075, 8, 6), toonMat(ORN[k % 4])); o.position.set(Math.cos(a) * rr, yy, Math.sin(a) * rr); tg.add(o); }
+    for (var q = 0; q < 56; q++) { var c2 = cones[q % 4], a2 = (q * 0.9) % (Math.PI * 2) + R() * 0.3, h2 = 0.08 + R() * 0.8, r2 = c2[0] * (1 - h2) + 0.07, y2 = c2[2] + h2 * c2[1]; var gl = glow(0.26, 0.2); gl.material.color.setHex(q % 3 === 0 ? 0xffd27a : q % 3 === 1 ? 0xff7a6a : 0xfff4d6); gl.position.set(Math.cos(a2) * r2, y2, Math.sin(a2) * r2); tg.add(gl); CRECHE.lights.push({ s: gl, ph: R() * 6.28 }); }
+    var ts = new THREE.Mesh(new THREE.OctahedronGeometry(0.22, 0), new THREE.MeshStandardMaterial({ color: 0xffe9a8, emissive: 0xffd36a, emissiveIntensity: 0.9, roughness: 0.4 })); ts.position.y = 4.62; ts.scale.set(1, 1.5, 0.4); tg.add(ts); var tsg = glow(1.6, 0.6); tsg.material.color.setHex(0xfff1c8); tsg.position.y = 4.62; tg.add(tsg); CRECHE.treeStar = { m: ts, g: tsg };
+    var tl = new THREE.PointLight(0xffd080, 0, 9); tl.position.set(0, 2.2, 0); tg.add(tl); CRECHE.treeLight = tl;
+    [[0.9, 0.5, 0.3, 0.3, 0xc0262e], [-0.8, 0.7, 0.25, 0.25, 0x2b5f9e], [0.2, -1.0, 0.35, 0.22, 0xd9b14d]].forEach(function(b){ var bx = new THREE.Mesh(new THREE.BoxGeometry(b[2], b[3], b[2]), sMat(b[4], 0.6)); bx.position.set(b[0], b[3] / 2, b[1]); tg.add(bx); var rb = new THREE.Mesh(new THREE.BoxGeometry(b[2] + 0.01, b[3] + 0.01, 0.05), sMat(0xf1ebdd, 0.6)); rb.position.set(b[0], b[3] / 2, b[1]); tg.add(rb); }); // 선물 상자
+    OBST.push({ x1: TX - 1.9, x2: TX + 1.9, z1: TZ - 1.9, z2: TZ + 1.9 });
+  }
+  if (SEASON.veil) { // 사순 제5주일 ~ 성토요일: 성요셉상·성모상·루르드 성모상에 보라 천, 제대 벽 십자고상은 성금요일에 벗깁니다
+    var vm = new THREE.MeshStandardMaterial({ color: 0x5b2d7a, roughness: 0.95, side: THREE.DoubleSide }), prof = [[0.5, 0], [0.53, 0.45], [0.5, 1.05], [0.42, 1.45], [0.31, 1.7], [0.17, 1.85], [0.0, 1.92]].map(function(p){ return new THREE.Vector2(p[0], p[1]); }), vg = new THREE.LatheGeometry(prof, 18);
+    [[-8.0, 1.0, -12.6, 1.0], [8.0, 1.0, -12.6, 1.0], [-4.4, 1.43, -14.33, 0.68]].forEach(function(v){ var m = new THREE.Mesh(vg, vm); m.position.set(v[0], v[1], v[2]); m.scale.setScalar(v[3]); scene.add(m); CRECHE.veils.push(m); });
+    if (SEASON.veilCross) { var cv = new THREE.Mesh(new THREE.BoxGeometry(1.4, 5.7, 0.1), vm); cv.position.set(0, 5.5, WALL_Z + 0.07); scene.add(cv); CRECHE.veils.push(cv); var ch = new THREE.Mesh(new THREE.BoxGeometry(4.6, 1.3, 0.1), vm); ch.position.set(0, 7.25, WALL_Z + 0.07); scene.add(ch); CRECHE.veils.push(ch); }
+  }
+})();
+function renderCreche(){ var t = $('#cr-title'), x = $('#cr-text'), p = $('#cr-prayer'), h = $('#cr-hymn'), m = $('#cr-msg'); if (!t) return;
+  if (!SEASON.baby) { t.textContent = '빈 구유'; x.textContent = '아기 예수님을 기다리는 빈 구유입니다. 마리아와 요셉이 베들레헴에 닿았고, 소와 나귀가 곁을 지킵니다. 성탄 밤(12월 24일 저녁)이 되면 아기 예수님께서 이 자리에 누우십니다.'; p.textContent = '오소서, 주 예수님. 저희 마음을 당신의 구유로 삼으소서. 아멘.'; if (h) h.textContent = '임하소서 임마누엘 듣기'; }
+  else if (!SEASON.epiphany) { t.textContent = '아기 예수님께 경배'; x.textContent = '말구유에 누우신 아기 예수님. 목자들이 양을 데리고 먼저 달려왔습니다.' + (SEASON.kings ? ' 동방박사들은 별을 따라 오는 중입니다. 오른쪽 통로를 보세요.' : ''); p.textContent = '"하늘 높은 데서는 하느님께 영광, 땅에서는 그분 마음에 드는 사람들에게 평화!" (루카 2,14)'; if (h) h.textContent = '고요한 밤 듣기'; }
+  else { t.textContent = '동방박사의 경배'; x.textContent = '별을 따라온 세 박사가 황금과 유향과 몰약을 드립니다. 우리도 가진 것을 드립니다.'; p.textContent = '주님, 저희도 별을 따라 당신께 이르게 하소서. 아멘.'; if (h) h.textContent = '기쁘다 구주 오셨네 듣기'; }
+  if (m) m.textContent = SEASON.epiphany ? '주님 공현 대축일 — 구유는 주님 세례 축일까지 머뭅니다.' : SEASON.kings ? '동방박사는 ' + (SEASON.epi.getMonth() + 1) + '월 ' + SEASON.epi.getDate() + '일 주님 공현 대축일에 구유에 닿습니다.' : SEASON.baby ? '성탄 시기 내내 아기 예수님께서 여기 계십니다.' : '대림 시기: 주일마다 대림환의 초가 하나씩 더 켜집니다.'; }
+function openCreche(){ var o = OBJ.creche; if (!o) return; faceTo(o.at[0], o.at[1]); setPose(myAvatar, 'kneel'); adoreKneel = true; var ax = myAvatar.position.x, az = myAvatar.position.z;
+  beginSpecial('creche', new THREE.Vector3(ax - 1.8, 1.95, az + 2.2), new THREE.Vector3(o.at[0], 1.0, o.at[1])); renderCreche(); openSheet('creche'); rtSend('creche');
+  fxSparkle(o.at[0], 1.7, o.at[1], { n: 16, color: 0xffe6b0, spread: 0.7, rise: 0.5, dur: 1800 }); }
+if ($('#cr-hymn')) $('#cr-hymn').addEventListener('click', function(){ if (typeof organPlay !== 'function') return; initAudio(); organPlay(!SEASON.baby ? 'emmanuel' : SEASON.epiphany ? 'joy' : 'silent'); toast('오르간이 조용히 연주합니다.', 1800); });
+if ($('#cr-amen')) $('#cr-amen').addEventListener('click', function(){ amen(); });
+function seasonTick(dt, t){
+  if (CRECHE.lights.length) { var night = (typeof SKY !== 'undefined' && SKY && typeof SKY.dl === 'number') ? SKY.dl < 0.45 : false, base = night ? 0.55 : 0.1, amp = night ? 0.4 : 0.05;
+    for (var i = 0; i < CRECHE.lights.length; i++) { var L = CRECHE.lights[i]; L.s.material.opacity = base + amp * (0.5 + 0.5 * Math.sin(t * 2.4 + L.ph)); }
+    if (CRECHE.treeLight) CRECHE.treeLight.intensity = night ? 0.75 : 0; if (CRECHE.treeStar) CRECHE.treeStar.g.material.opacity = night ? 0.75 + 0.2 * Math.sin(t * 1.7) : 0.35; }
+  if (CRECHE.star && SEASON.baby) CRECHE.star.g.material.opacity = 0.7 + 0.2 * Math.sin(t * 1.3);
+}
+function seasonEnter(){ // 들어올 때 시기 안내 (기본 안내 토스트 뒤에 차례로)
+  var q = [];
+  if (SEASON.vigil) { var v = $('#vigil'); if (v) { v.hidden = false; v.classList.remove('lift'); setTimeout(function(){ v.classList.add('lift'); }, 1500); setTimeout(function(){ v.hidden = true; }, 17000); } q.push(['부활 성야, 빛의 예식: 어둠 속에서 부활초가 켜지고 빛이 번져 갑니다.', 6000]); }
+  if (SEASON.xmasEve || SEASON.xmasDay) q.push(['기쁜 성탄! 제대 오른쪽 구유에 아기 예수님께서 누워 계십니다.', 5000]);
+  else if (SEASON.epiphany) q.push(['주님 공현 대축일: 동방박사들이 별을 따라 구유에 닿았습니다.', 5000]);
+  else if (SEASON.kings) q.push(['동방박사들이 별을 따라 구유로 가는 중입니다. 오른쪽 통로를 보세요.', 5000]);
+  else if (SEASON.creche) q.push(['대림 시기: 제대 오른쪽에 빈 구유가 놓였습니다. 성탄 밤을 기다립니다.', 5000]);
+  if (SEASON.ash) q.push(['재의 수요일: 이마에 재를 받았습니다. "회개하고 복음을 믿어라."', 5000]);
+  if (SEASON.palm) q.push(['주님 수난 성지 주일: 종려가지를 들었습니다. 호산나!', 5000]);
+  else if (SEASON.veil) q.push(['수난 시기: 성상을 보라 천으로 가렸습니다. 부활 성야에 벗깁니다.', 5000]);
+  if (typeof feastToday === 'function' && feastToday()) q.push(['FEAST', 6000]);
+  var d = 5800; q.forEach(function(it){ setTimeout(function(){ if (it[0] === 'FEAST') feastAnnounce(); else toast(it[0], it[1]); }, d); d += it[1] + 500; });
+}
+
 function frame(){
   if (!running) return;
   requestAnimationFrame(frame);
@@ -3078,7 +3238,7 @@ function frame(){
   if (moving) { stepT += dt; if (stepT > 0.46) { stepT = 0; footstep(myAvatar.position.z > 15); } } else stepT = 0.3;
   updateBows();
   if (!joy.active && orbit.autoYaw) { orbit.autoYaw *= Math.exp(-dt * 2.2); if (Math.abs(orbit.autoYaw) < 0.002) orbit.autoYaw = 0; }
-  skyTick(dt, t); eggTick(dt, t); updateHand(); updateFX(dt); updateRide(dt); updateSister(dt); updateDogs(dt); updateBall(dt); updatePeers(dt); rtTrack(false);
+  skyTick(dt, t); eggTick(dt, t); updateHand(); seasonTick(dt, t); updateFX(dt); updateRide(dt); updateSister(dt); updateDogs(dt); updateBall(dt); updatePeers(dt); rtTrack(false);
 
   // facing smoothing
   var cur = myAvatar.rotation.y, diff = Math.atan2(Math.sin(state.facing - cur), Math.cos(state.facing - cur));
@@ -3253,15 +3413,15 @@ var MEDIT = [
 function renderMedit(){ var m = MEDIT[dayOfYear() % MEDIT.length], el = $('#nt-medit'); if (el) el.textContent = '“' + m[0] + '” — ' + m[1]; if (typeof wxLabel === 'function') wxLabel(); }
 renderMedit();
 // ---------- sheets ----------
-var SHEETS = ['rosary','candle','pray','adore','guest','intention','live','me','more','notice','art','station','sister','angelus','quiz','organ','tour','saint','prayers','confess','music','cafe']; // (v18) 성상·기도서·고해소·미사곡 · (v19) 카페
+var SHEETS = ['creche','rosary','candle','pray','adore','guest','intention','live','me','more','notice','art','station','sister','angelus','quiz','organ','tour','saint','prayers','confess','music','cafe']; // (v18) 성상·기도서·고해소·미사곡 · (v19) 카페
 var sheets = {}; SHEETS.forEach(function(k){ sheets[k] = $('#sh-' + k); });
 var btns = { rosary: $('#b-rosary'), candle: $('#b-candle'), more: $('#b-more') };
 function anySheetOpen(){ if (!SHEETS) return false; return SHEETS.some(function(k){ return sheets[k].classList.contains('open'); }); }
-var SPECIAL_SHEET = { mirror: 'me', adore: 'adore', rosary: 'rosary', organ: 'organ' }; // 이 특별 카메라는 해당 시트가 닫히면 끝납니다
+var SPECIAL_SHEET = { mirror: 'me', adore: 'adore', rosary: 'rosary', organ: 'organ', creche: 'creche' }; // 이 특별 카메라는 해당 시트가 닫히면 끝납니다
 function openSheet(k){
   if (state.special && SPECIAL_SHEET[state.special] && k !== SPECIAL_SHEET[state.special]) { stopAdoration(); endSpecial(); }
   SHEETS.forEach(function(n){ sheets[n].classList.toggle('open', n === k); if (btns[n]) btns[n].classList.toggle('on', n === k); });
-  if (k === 'me') enterMirror();
+  if (k === 'me') { enterMirror(); if (typeof renderFeastUI === 'function') renderFeastUI(); }
   if (k && typeof TOUR !== 'undefined' && TOUR.on && k !== 'tour') tourCancel();
   if (!k && typeof TTS !== 'undefined' && TTS.ok) sayStop();
   if (!k && typeof confessLamp === 'function') confessLamp(false);
@@ -3367,7 +3527,66 @@ if ($('#me-random')) $('#me-random').addEventListener('click', function(){ var p
   me.cloth = Math.floor(Math.random() * CLOTH.length); delete me.clothHex; me.hairc = Math.floor(Math.random() * HAIRC.length); delete me.haircHex; me.skin = Math.floor(Math.random() * SKINS.length); me.hair = pick(HAIRS)[0]; me.face = pick(FACES)[0];
   me.top = Math.random() < 0.6 ? 'plain' : pick(TOPS)[0]; me.hat = Math.random() < 0.75 ? 'none' : pick(HATS)[0]; me.bangs = Math.random() < 0.7; me.glasses = Math.random() < 0.25; me.skirt = Math.random() < 0.35; me.scarf = Math.random() < 0.2; me.necklace = Math.random() < 0.3; me.bag = Math.random() < 0.2; me.veil = Math.random() < 0.15; me.rosary = Math.random() < 0.3; me.bottom = pick(BOTTOMS); me.size = 'normal';
   applyMe(); toast('무작위로 골랐습니다. 마음에 들 때까지 눌러 보세요.', 1800); });
-if ($('#me-reset')) $('#me-reset').addEventListener('click', function(){ var name = me.name; me = { name: name, cloth: Math.floor(Math.random() * 8), hair: 'short', hairc: 1, veil: false, rosary: false, skin: 1 }; applyMe(); });
+if ($('#me-reset')) $('#me-reset').addEventListener('click', function(){ var name = me.name, fe = me.feast, fw = me.feastWho, fa = me.feastAuto; me = { name: name, cloth: Math.floor(Math.random() * 8), hair: 'short', hairc: 1, veil: false, rosary: false, skin: 1 }; if (fe) { me.feast = fe; me.feastWho = fw; me.feastAuto = fa; } applyMe(); }); // (v21) 영명축일은 남김
+// ---------- (v21) 영명축일: 세례명 → 수호성인 축일 후보(내 모습 시트에서 고름), 오늘이면 축하 · 이름표 ✦ · 평화의 인사가 축하 인사로 ----------
+//   한 이름에 성인이 여럿이면(요한·마리아·데레사…) 후보를 모두 보여 주고 직접 고릅니다. 한 분뿐이면 자동으로 정합니다(직접 고른 적 없을 때만).
+var FEASTS = [
+  ['요한|요안', '6-24', '성 요한 세례자 탄생 대축일'], ['요한|요안', '12-27', '성 요한 사도 복음사가 축일'], ['요한|보스코', '1-31', '성 요한 보스코 사제 기념일'], ['요한|비안네', '8-4', '성 요한 마리아 비안네 사제 기념일'], ['요한', '10-22', '성 요한 바오로 2세 교황 기념일'], ['요한', '12-14', '십자가의 성 요한 사제 학자 기념일'], ['요한', '3-8', '하느님의 성 요한 수도자 기념일'], ['요한|크리소스토모', '9-13', '성 요한 크리소스토모 주교 학자 기념일'],
+  ['바오로|바울로', '6-29', '성 베드로와 성 바오로 사도 대축일'], ['바오로|바울로', '1-25', '성 바오로 사도의 회심 축일'], ['바오로|정하상', '9-20', '성 정하상 바오로와 동료 순교자 대축일'], ['베드로', '6-29', '성 베드로와 성 바오로 사도 대축일'], ['베드로', '2-22', '성 베드로 사도좌 축일'],
+  ['안드레아|안드레', '11-30', '성 안드레아 사도 축일'], ['안드레아|김대건|대건', '7-5', '성 김대건 안드레아 사제 순교자 대축일'], ['야고보', '7-25', '성 야고보 사도 축일'], ['야고보|필립보|필립', '5-3', '성 필립보와 성 야고보 사도 축일'], ['바르톨로메오|바르톨로메우', '8-24', '성 바르톨로메오 사도 축일'],
+  ['토마스|토마', '7-3', '성 토마스 사도 축일'], ['토마스|아퀴나스', '1-28', '성 토마스 아퀴나스 사제 학자 기념일'], ['토마스', '6-22', '성 토마스 모어 순교자 기념일'], ['마태오', '9-21', '성 마태오 사도 복음사가 축일'], ['시몬|유다|타대오', '10-28', '성 시몬과 성 유다 사도 축일'], ['마티아', '5-14', '성 마티아 사도 축일'], ['마르코', '4-25', '성 마르코 복음사가 축일'], ['루카', '10-18', '성 루카 복음사가 축일'], ['바르나바', '6-11', '성 바르나바 사도 기념일'], ['티모테오|티토', '1-26', '성 티모테오와 성 티토 주교 기념일'],
+  ['스테파노', '12-26', '성 스테파노 첫 순교자 축일'], ['라우렌시오', '8-10', '성 라우렌시오 부제 순교자 축일'], ['빈첸시오', '9-27', '성 빈첸시오 드 폴 사제 기념일'], ['빈첸시오', '1-22', '성 빈첸시오 부제 순교자 기념일'], ['세바스티아노', '1-20', '성 세바스티아노 순교자 기념일'],
+  ['아우구스티노|아우구스티누스', '8-28', '성 아우구스티노 주교 학자 기념일'], ['암브로시오', '12-7', '성 암브로시오 주교 학자 기념일'], ['예로니모', '9-30', '성 예로니모 사제 학자 기념일'], ['그레고리오', '9-3', '성 대 그레고리오 교황 학자 기념일'], ['그레고리오|바실리오', '1-2', '성 바실리오와 성 그레고리오 나지안조 주교 학자 기념일'], ['레오', '11-10', '성 대 레오 교황 학자 기념일'],
+  ['베네딕토|베네딕도', '7-11', '성 베네딕토 아빠스 기념일'], ['도미니코', '8-8', '성 도미니코 사제 기념일'], ['도미니코|사비오', '5-6', '성 도미니코 사비오 기념일'], ['프란치스코|프란시스코', '10-4', '아시시의 성 프란치스코 기념일'], ['프란치스코|프란시스코|하비에르|사베리오', '12-3', '성 프란치스코 하비에르 사제 기념일'], ['프란치스코|프란시스코|살레시오', '1-24', '성 프란치스코 살레시오 주교 학자 기념일'],
+  ['안토니오', '6-13', '파도바의 성 안토니오 사제 학자 기념일'], ['안토니오', '1-17', '성 안토니오 아빠스 기념일'], ['보나벤투라', '7-15', '성 보나벤투라 주교 학자 기념일'], ['이냐시오', '7-31', '성 이냐시오 데 로욜라 사제 기념일'], ['이냐시오', '10-17', '안티오키아의 성 이냐시오 주교 순교자 기념일'], ['알로이시오', '6-21', '성 알로이시오 곤자가 수도자 기념일'],
+  ['스타니슬라오', '11-13', '성 스타니슬라오 코스트카 수도자 기념일'], ['스타니슬라오', '4-11', '성 스타니슬라오 주교 순교자 기념일'], ['가롤로|카롤로|보로메오', '11-4', '성 가롤로 보로메오 주교 기념일'], ['마르티노', '11-11', '투르의 성 마르티노 주교 기념일'], ['마르티노', '11-3', '성 마르티노 데 포레스 수도자 기념일'], ['니콜라오', '12-6', '성 니콜라오 주교 기념일'],
+  ['요셉|요세프', '3-19', '복되신 동정 마리아의 배필 성 요셉 대축일'], ['요셉|요세프', '5-1', '노동자 성 요셉 기념일'], ['요아킴', '7-26', '성 요아킴과 성녀 안나 기념일'], ['자카리아', '11-5', '성 자카리아와 성녀 엘리사벳 기념일'], ['실베스테르', '12-31', '성 실베스테르 1세 교황 기념일'], ['발렌티노', '2-14', '성 발렌티노 순교자 기념일'], ['블라시오', '2-3', '성 블라시오 주교 순교자 기념일'],
+  ['치릴로|메토디오', '2-14', '성 치릴로 수도자와 성 메토디오 주교 기념일'], ['파트리치오', '3-17', '성 파트리치오 주교 기념일'], ['제오르지오|게오르기오', '4-23', '성 제오르지오 순교자 기념일'], ['마르첼리노', '6-2', '성 마르첼리노와 성 베드로 순교자 기념일'], ['유스티노', '6-1', '성 유스티노 순교자 기념일'], ['보니파시오', '6-5', '성 보니파시오 주교 순교자 기념일'], ['베르나르도', '8-20', '성 베르나르도 아빠스 학자 기념일'],
+  ['비오', '9-23', '피에트렐치나의 성 비오 사제 기념일'], ['비오', '8-21', '성 비오 10세 교황 기념일'], ['비오', '4-30', '성 비오 5세 교황 기념일'], ['막시밀리아노|콜베', '8-14', '성 막시밀리아노 마리아 콜베 사제 순교자 기념일'], ['골룸바노', '11-23', '성 골룸바노 아빠스 기념일'], ['클레멘스', '11-23', '성 클레멘스 1세 교황 순교자 기념일'], ['안셀모', '4-21', '성 안셀모 주교 학자 기념일'], ['알베르토', '11-15', '성 대 알베르토 주교 학자 기념일'],
+  ['요사팟', '11-12', '성 요사팟 주교 순교자 기념일'], ['가밀로', '7-14', '성 가밀로 데 렐리스 사제 기념일'], ['알폰소', '8-1', '성 알폰소 마리아 데 리구오리 주교 학자 기념일'], ['루도비코|루이', '8-25', '성 루도비코 기념일'], ['헨리코', '7-13', '성 헨리코 기념일'], ['에두아르도|에드워드', '10-13', '성 에두아르도 기념일'], ['파비아노', '1-20', '성 파비아노 교황 순교자 기념일'], ['힐라리오', '1-13', '성 힐라리오 주교 학자 기념일'],
+  ['아타나시오', '5-2', '성 아타나시오 주교 학자 기념일'], ['치프리아노|고르넬리오', '9-16', '성 고르넬리오 교황과 성 치프리아노 주교 순교자 기념일'], ['폴리카르포', '2-23', '성 폴리카르포 주교 순교자 기념일'], ['이레네오', '6-28', '성 이레네오 주교 순교자 기념일'], ['다미아노|고스마', '9-26', '성 고스마와 성 다미아노 순교자 기념일'], ['에우세비오', '8-2', '성 에우세비오 주교 기념일'],
+  ['베다', '5-25', '성 베다 사제 학자 기념일'], ['갈리스토', '10-14', '성 갈리스토 1세 교황 순교자 기념일'], ['디오니시오', '10-9', '성 디오니시오 주교와 동료 순교자 기념일'], ['브루노', '10-6', '성 브루노 사제 기념일'], ['비토', '6-15', '성 비토 순교자 기념일'], ['크리스토포로', '7-25', '성 크리스토포로 순교자 기념일'], ['로베르토|벨라르미노', '9-17', '성 로베르토 벨라르미노 주교 학자 기념일'], ['첼레스티노', '5-19', '성 첼레스티노 5세 교황 기념일'],
+  ['다니엘', '7-21', '예언자 성 다니엘 기념일'], ['다윗|다비드', '12-29', '성왕 다윗 기념일'], ['사무엘', '8-20', '예언자 성 사무엘 기념일'], ['엘리야', '7-20', '예언자 성 엘리야 기념일'], ['모세', '9-4', '예언자 성 모세 기념일'], ['아브라함', '10-9', '성조 아브라함 기념일'],
+  ['노엘|노엘라|임마누엘|엠마누엘|아나스타시아', '12-25', '주님 성탄 대축일'], ['미카엘|미카엘라|가브리엘|가브리엘라|라파엘|라파엘라', '9-29', '성 미카엘, 성 가브리엘, 성 라파엘 대천사 축일'],
+  ['마리아', '8-15', '성모 승천 대축일'], ['마리아', '9-8', '복되신 동정 마리아 탄생 축일'], ['마리아', '12-8', '원죄 없이 잉태되신 복되신 동정 마리아 대축일'], ['마리아', '1-1', '천주의 성모 마리아 대축일'], ['마리아', '5-31', '복되신 동정 마리아의 방문 축일'], ['마리아', '2-11', '루르드의 복되신 동정 마리아 기념일'], ['마리아|로사리아', '10-7', '묵주기도의 복되신 동정 마리아 기념일'], ['마리아', '7-16', '가르멜 산의 복되신 동정 마리아 기념일'], ['마리아', '9-15', '고통의 성모 마리아 기념일'], ['마리아', '11-21', '복되신 동정 마리아 자헌 기념일'], ['마리아', '8-22', '모후이신 동정 마리아 기념일'], ['마리아|파티마', '5-13', '파티마의 복되신 동정 마리아 기념일'], ['마리아|과달루페', '12-12', '과달루페의 복되신 동정 마리아 기념일'],
+  ['막달레나', '7-22', '성녀 마리아 막달레나 축일'], ['마르타', '7-29', '성녀 마르타 기념일'], ['안나', '7-26', '성 요아킴과 성녀 안나 기념일'], ['엘리사벳|엘리자벳|엘리사베타', '11-17', '헝가리의 성녀 엘리사벳 수도자 기념일'], ['엘리사벳|엘리자벳|이사벨|이사벨라', '7-4', '포르투갈의 성녀 엘리사벳 기념일'], ['엘리사벳|엘리자벳', '11-5', '성 자카리아와 성녀 엘리사벳 기념일'],
+  ['요안나', '5-24', '성녀 요안나 기념일'], ['요안나|샹탈', '8-12', '성녀 요안나 프란치스카 드 샹탈 수도자 기념일'], ['수산나', '8-11', '성녀 수산나 동정 순교자 기념일'], ['베로니카', '7-12', '성녀 베로니카 기념일'], ['아녜스|아그네스', '1-21', '성녀 아녜스 동정 순교자 기념일'], ['루치아|루시아', '12-13', '성녀 루치아 동정 순교자 기념일'], ['아가타', '2-5', '성녀 아가타 동정 순교자 기념일'],
+  ['체칠리아|세실리아|세칠리아', '11-22', '성녀 체칠리아 동정 순교자 기념일'], ['가타리나|카타리나|카테리나', '4-29', '시에나의 성녀 가타리나 동정 학자 기념일'], ['가타리나|카타리나|카테리나', '11-25', '알렉산드리아의 성녀 가타리나 동정 순교자 기념일'],
+  ['데레사|테레사', '10-1', '아기 예수의 성녀 데레사 동정 학자 기념일'], ['데레사|테레사', '10-15', '아빌라의 성녀 데레사 동정 학자 기념일'], ['데레사|테레사', '9-5', '콜카타의 성녀 데레사 수도자 기념일'], ['데레사|테레사|베네딕타', '8-9', '성녀 데레사 베네딕타(에디트 슈타인) 동정 순교자 축일'],
+  ['모니카', '8-27', '성녀 모니카 기념일'], ['클라라|글라라', '8-11', '성녀 클라라 동정 기념일'], ['스콜라스티카', '2-10', '성녀 스콜라스티카 동정 기념일'], ['로사|로즈', '8-23', '리마의 성녀 로사 동정 기념일'], ['헬레나', '8-18', '성녀 헬레나 기념일'], ['소피아', '9-30', '성녀 소피아 기념일'], ['비비안나|비비안', '12-2', '성녀 비비안나 동정 순교자 기념일'],
+  ['크리스티나', '7-24', '성녀 크리스티나 동정 순교자 기념일'], ['레지나', '9-7', '성녀 레지나 동정 순교자 기념일'], ['율리아', '5-22', '코르시카의 성녀 율리아 동정 순교자 기념일'], ['율리아나', '2-16', '성녀 율리아나 동정 순교자 기념일'], ['안젤라', '1-27', '성녀 안젤라 메리치 동정 기념일'], ['젬마', '4-11', '성녀 젬마 갈가니 동정 기념일'],
+  ['마르가리타|마가렛|마르게리타', '11-16', '스코틀랜드의 성녀 마르가리타 기념일'], ['마르가리타|마가렛|마르게리타', '7-20', '안티오키아의 성녀 마르가리타 동정 순교자 기념일'], ['마르가리타|마가렛|알라코크', '10-16', '성녀 마르가리타 마리아 알라코크 동정 기념일'], ['리타', '5-22', '카시아의 성녀 리타 수도자 기념일'], ['파우스티나', '10-5', '성녀 파우스티나 코발스카 동정 기념일'],
+  ['히야친타|히아친타|야친타', '2-20', '성녀 히야친타 마르토 기념일'], ['프란치스카|프란체스카', '3-9', '로마의 성녀 프란치스카 수도자 기념일'], ['브리지다|비르지타|브리짓다', '7-23', '성녀 비르지타 수도자 축일'], ['빅토리아', '12-23', '성녀 빅토리아 동정 순교자 기념일'], ['아델라|아델라이데', '12-16', '성녀 아델라이데 기념일'], ['루피나', '7-10', '성녀 루피나 동정 순교자 기념일'], ['유스티나', '10-7', '성녀 유스티나 동정 순교자 기념일'],
+  ['안토니아', '6-13', '파도바의 성 안토니오 사제 학자 기념일'], ['스테파니아', '12-26', '성 스테파노 첫 순교자 축일'], ['요셉피나|요세피나', '3-19', '복되신 동정 마리아의 배필 성 요셉 대축일'], ['도미니카', '8-8', '성 도미니코 사제 기념일'], ['플로라', '11-24', '성녀 플로라 동정 순교자 기념일'], ['루이사', '3-15', '성녀 루이사 드 마리약 수도자 기념일'], ['이레네', '4-5', '성녀 이레네 동정 순교자 기념일'],
+  ['사비나', '8-29', '성녀 사비나 순교자 기념일'], ['아폴로니아', '2-9', '성녀 아폴로니아 동정 순교자 기념일'], ['바르바라', '12-4', '성녀 바르바라 동정 순교자 기념일'], ['마틸다', '3-14', '성녀 마틸다 기념일'], ['제노베파', '1-3', '성녀 제노베파 동정 기념일'], ['올가', '7-11', '성녀 올가 기념일'], ['마리안나|마리아나', '5-26', '성녀 마리아나 데 헤수스 동정 기념일'], ['실비아', '11-3', '성녀 실비아 기념일'],
+  ['라우라', '10-19', '성녀 라우라 동정 순교자 기념일'], ['세레나', '8-16', '성녀 세레나 기념일'], ['마르첼라', '1-31', '성녀 마르첼라 기념일'], ['펠리치타|페르페투아', '3-7', '성녀 페르페투아와 성녀 펠리치타 순교자 기념일'], ['파울라|바울라', '1-26', '성녀 파울라 수도자 기념일'], ['골룸바', '9-20', '성 김대건 안드레아와 성 정하상 바오로와 동료 순교자들 대축일']
+];
+function normName(n){ return String(n || '').replace(/[\s0-9()\[\]·.,\-_!?~]/g, ''); }
+function fmtMD(k){ var p = String(k).split('-'); return p[0] + '월 ' + p[1] + '일'; }
+function feastCandidates(name){ var n = normName(name); if (!n) return []; var out = [], seen = {};
+  FEASTS.forEach(function(e){ var keys = e[0].split('|'); for (var i = 0; i < keys.length; i++) { if (n.indexOf(keys[i]) >= 0) { if (!seen[e[1] + e[2]]) { seen[e[1] + e[2]] = 1; out.push({ k: e[1], who: e[2], key: keys[i] }); } break; } } });
+  out = out.filter(function(c){ return !out.some(function(o){ return o.key !== c.key && o.key.indexOf(c.key) >= 0; }); }); // 더 긴 이름이 맞으면(요안나 ⊃ 안나, 막달레나…) 짧은 쪽 후보는 뺍니다
+  out.sort(function(a, b){ return b.key.length - a.key.length; }); return out; }
+function feastToday(){ if (typeof me === 'undefined' || !me || !me.feast) return false; var d = nowDate(); return me.feast === (d.getMonth() + 1) + '-' + d.getDate(); }
+function feastAuto(){ var c = feastCandidates(me.name); // 세례명이 한 성인에게만 맞으면 자동으로 (직접 고른 적 없을 때만)
+  if (c.length === 1 && (!me.feast || me.feastAuto)) { me.feast = c[0].k; me.feastWho = c[0].who; me.feastAuto = true; }
+  else if (me.feastAuto && !c.some(function(x){ return x.k === me.feast; })) { delete me.feast; delete me.feastWho; delete me.feastAuto; } }
+function renderFeastUI(){ var sel = $('#me-feast'), cus = $('#me-feast-custom'), hint = $('#me-feast-hint'), ms = $('#me-feast-m'), ds = $('#me-feast-d'); if (!sel) return;
+  if (ms && !ms.options.length) { for (var m = 1; m <= 12; m++) ms.appendChild(new Option(m + '월', String(m))); for (var d = 1; d <= 31; d++) ds.appendChild(new Option(d + '일', String(d))); }
+  var cands = feastCandidates(me.name); sel.innerHTML = ''; sel.appendChild(new Option('선택 안 함', '')); cands.forEach(function(c){ sel.appendChild(new Option(fmtMD(c.k) + ' · ' + c.who, c.k + '|' + c.who)); }); sel.appendChild(new Option('직접 고르기 (월·일)', 'custom'));
+  var cur = ''; if (me.feast) { var hit = cands.filter(function(c){ return c.k === me.feast && (!me.feastWho || c.who === me.feastWho); })[0] || cands.filter(function(c){ return c.k === me.feast; })[0]; cur = hit ? hit.k + '|' + hit.who : 'custom'; }
+  sel.value = cur; if (cus) cus.hidden = cur !== 'custom'; if (cur === 'custom' && me.feast && ms) { var p = me.feast.split('-'); ms.value = p[0]; ds.value = p[1]; }
+  if (hint) hint.textContent = me.feast ? (feastToday() ? '오늘이에요! 축하합니다 ✦' : fmtMD(me.feast) + (me.feastWho ? ' · ' + me.feastWho : '')) : (cands.length ? '세례명에 맞는 축일을 골라 주세요' : '세례명을 적으면 축일 후보가 나옵니다'); }
+function feastSet(k, who, auto){ if (k) { me.feast = k; me.feastWho = who || ''; me.feastAuto = !!auto; } else { delete me.feast; delete me.feastWho; delete me.feastAuto; } saveMe(); renderFeastUI(); if (typeof rtTrack === 'function') rtTrack(true); }
+(function(){ var sel = $('#me-feast'), ms = $('#me-feast-m'), ds = $('#me-feast-d'); if (!sel) return;
+  sel.addEventListener('change', function(){ var v = sel.value; if (v === 'custom') { $('#me-feast-custom').hidden = false; if (ms && ds) feastSet(ms.value + '-' + ds.value, '', false); } else if (!v) feastSet(null); else { var p = v.split('|'); feastSet(p[0], p[1], false); } });
+  [ms, ds].forEach(function(el){ if (el) el.addEventListener('change', function(){ if (sel.value === 'custom') feastSet(ms.value + '-' + ds.value, '', false); }); });
+  $('#me-name').addEventListener('input', function(){ feastAuto(); saveMe(); renderFeastUI(); });
+  feastAuto(); saveMe();
+})();
+function feastAnnounce(){ if (!feastToday()) return; var nm = (me.name || '').trim(); toast('오늘은 ' + (nm ? nm + '님의 ' : '') + '영명축일입니다' + (me.feastWho ? ' · ' + me.feastWho : '') + '. 축하합니다! ✦', 6000);
+  var ax = myAvatar.position.x, ay = myAvatar.position.y, az = myAvatar.position.z; fxPetals(ax, ay + 2.1, az, 18); fxSparkle(ax, ay + 1.5, az, { n: 30, color: 0xffd27a, spread: 0.8, rise: 0.9, dur: 2400 }); initAudio(); chime(); }
+
 // ---------- shared store (Supabase) or device store ----------
 function sbFetch(path, opts){
   var o = opts || {};
@@ -3417,10 +3636,11 @@ function padStop(){ if (!pad) return; var p = pad; pad = null; p.g.gain.cancelSc
   setTimeout(function(){ p.oscs.forEach(function(o){ try { o.stop(); } catch (e) {} }); try { p.lfo.stop(); } catch (e) {} try { p.g.disconnect(); } catch (e) {} }, 4000); }
 document.querySelectorAll('#ad-dur button').forEach(function(b){ b.addEventListener('click', function(){ var mins = parseInt(b.getAttribute('data-m'), 10) || 1; store('chapel-adore', mins); adoreLeft = mins * 60; renderAdore(); document.querySelectorAll('#ad-dur button').forEach(function(x){ x.classList.toggle('on', x === b); }); $('#ad-msg').textContent = '말없이 ' + mins + '분. 끝나면 종이 한 번 울립니다. 먼저 나가도 됩니다.'; }); });
 // ---------- 수녀님 인사: 전례 시기·시간대에 맞는 한마디를 섞습니다 ----------
-function pickGreet(){ var h = new Date().getHours(), lit = (typeof LIT !== 'undefined' && LIT) ? LIT : {}, extra = [];
+function pickGreet(){ if (typeof feastToday === 'function' && feastToday() && Math.random() < 0.8) return '오늘 영명축일이시죠? 축하드려요. 수호성인께서 늘 함께하시길.'; var h = nowDate().getHours(), lit = (typeof LIT !== 'undefined' && LIT) ? LIT : {}, extra = [];
   if (lit.season === 'advent') extra.push('대림초가 하나씩 켜지는 때예요. 기다림의 마음으로.'); if (lit.season === 'christmas') extra.push('아기 예수님께서 오셨어요. 기쁜 성탄 되세요.');
   if (lit.season === 'lent') extra.push('사순 시기예요. 작은 절제 하나 정해 보셨어요?'); if (lit.season === 'easter' || lit.season === 'pentecost') extra.push('알렐루야! 부활의 기쁨이 함께하기를.');
   if (lit.label === '묵주기도 성월') extra.push('묵주기도 성월이에요. 한 단만 함께 바쳐요.'); if (lit.label === '위령 성월') extra.push('위령 성월이에요. 먼저 가신 분들을 기억하며.'); if (lit.label === '성모 성월') extra.push('성모 성월이에요. 마당의 성모님께도 인사드리고 가세요.');
+  if (typeof SEASON !== 'undefined' && SEASON) { if (SEASON.epiphany) extra.push('동방박사들이 구유에 닿았어요. 우리도 가진 것을 드려요.'); else if (SEASON.kings) extra.push('동방박사들이 별을 따라 오고 있어요. 오른쪽 통로를 보세요.'); else if (SEASON.baby) extra.push('아기 예수님께서 구유에 누워 계세요. 가서 경배드리세요.'); else if (SEASON.creche) extra.push('제대 오른쪽에 빈 구유가 놓였어요. 성탄 밤을 기다려요.'); if (SEASON.ash) extra.push('재의 수요일이에요. 흙에서 왔으니 흙으로 돌아갈 것을 기억해요.'); if (SEASON.palm) extra.push('성지 주일이에요. 종려가지 들고 호산나!'); else if (SEASON.veil) extra.push('성상에 보라 천을 덮었어요. 주님 수난을 묵상하는 때예요.'); } // (v21)
   if (h < 10) extra.push('좋은 아침이에요. 오늘 하루도 주님과 함께.'); else if (h >= 22 || h < 5) extra.push('늦은 시간까지 수고 많으셨어요. 편히 쉬세요.');
   return (extra.length && Math.random() < 0.55) ? extra[Math.floor(Math.random() * extra.length)] : GREETS[Math.floor(Math.random() * GREETS.length)]; }
 function fmtDate(iso){ var d = new Date(iso); return (d.getMonth()+1) + '/' + d.getDate(); }
@@ -3542,8 +3762,8 @@ var RT = { on: false, ch: null, sb: null, peers: {}, id: null, lastSent: 0, last
 function rtId(){ var id = store('chapel-rtid'); if (!id) { id = 'p' + Math.random().toString(36).slice(2, 10); store('chapel-rtid', id); } return id; }
 function rtCfg(){ var c = { cloth: me.cloth, hair: me.hair, hairc: me.hairc, veil: !!me.veil, rosary: !!me.rosary, skin: me.skin, face: me.face, glasses: !!me.glasses, bangs: me.bangs !== false, skirt: !!me.skirt, bottom: me.bottom }; // (v18) 새 항목은 기본값이 아닐 때만 실어 보냅니다
   ['top', 'hat', 'size', 'clothHex', 'haircHex', 'hatc'].forEach(function(k){ var v = me[k]; if (v !== undefined && v !== null && v !== 'none' && v !== 'plain' && v !== 'normal') c[k] = v; }); ['scarf', 'necklace', 'bag'].forEach(function(k){ if (me[k]) c[k] = true; }); return c; }
-function rtPayload(){ return { id: RT.id, n: (me.name || '').slice(0, 12), c: rtCfg(), x: Math.round(myAvatar.position.x * 100) / 100, z: Math.round(myAvatar.position.z * 100) / 100, f: Math.round(state.facing * 100) / 100, p: myAvatar.userData.pose || 'stand', s: state.seated && mySeat ? seats.indexOf(mySeat) : -1, t: Date.now() }; }
-function rtKey(p){ return [p.n, p.x, p.z, p.f, p.p, p.s, JSON.stringify(p.c)].join('|'); }
+function rtPayload(){ return { id: RT.id, n: (me.name || '').slice(0, 12), c: rtCfg(), x: Math.round(myAvatar.position.x * 100) / 100, z: Math.round(myAvatar.position.z * 100) / 100, f: Math.round(state.facing * 100) / 100, p: myAvatar.userData.pose || 'stand', s: state.seated && mySeat ? seats.indexOf(mySeat) : -1, b: (typeof feastToday === 'function' && feastToday()) ? 1 : 0, t: Date.now() }; } // (v21) b: 오늘 영명축일
+function rtKey(p){ return [p.n, p.x, p.z, p.f, p.p, p.s, p.b, JSON.stringify(p.c)].join('|'); }
 function rtInit(){
   if (!SHARED || !window.supabase || !window.supabase.createClient) return;
   try {
@@ -3584,7 +3804,7 @@ function rtSync(stateMap){ // (v11) 들어와 있는 사람은 모두 세되, �
     var peer = RT.peers[key], cfgS = JSON.stringify(rtCfgOf(p));
     if (!peer) { peer = RT.peers[key] = { key: key, g: null, cfg: cfgS, name: p.n || '순례자', tx: p.x, tz: p.z, f: p.f || 0, pose: 'stand', seat: -1, moving: false }; if (RT.synced) joined.push(peer.name); }
     else if (cfgS !== peer.cfg) { peer.cfg = cfgS; if (peer.g) { rtUndraw(peer); rtDrawPeer(peer); } } // 옷차림이 바뀌면 다시 그림
-    peer.name = p.n || '순례자'; avatars.forEach(function(a){ if (a.peer === peer) a.name = peer.name; });
+    peer.name = p.n || '순례자'; peer.feast = !!p.b; avatars.forEach(function(a){ if (a.peer === peer) { a.name = peer.name; a.feast = peer.feast; } });
     var pose = p.p || 'stand', seat = typeof p.s === 'number' ? p.s : -1;
     peer.tx = p.x; peer.tz = p.z; peer.f = p.f || 0;
     if (seat >= 0 && seats[seat]) { var s = seats[seat]; peer.tx = s.x; peer.tz = pose === 'kneel' ? s.z - 0.42 : s.z; peer.f = 0; }
@@ -3599,7 +3819,7 @@ function rtSync(stateMap){ // (v11) 들어와 있는 사람은 모두 세되, �
 function rtDrawPeer(peer){ // 아바타를 만들어 장면에 올립니다
   var g; try { g = buildAvatar(JSON.parse(peer.cfg)); } catch (e) { try { g = buildAvatar({}); } catch (e2) { return; } }
   g.position.set(peer.tx, groundY(peer.tx, peer.tz), peer.tz); g.rotation.y = peer.f; setPose(g, peer.pose); scene.add(g); peer.g = g;
-  avatars.push({ g: g, name: peer.name, peer: peer, ph: Math.random() * 6 });
+  avatars.push({ g: g, name: peer.name, peer: peer, feast: !!peer.feast, ph: Math.random() * 6 });
 }
 function rtUndraw(peer){ if (!peer.g) return; scene.remove(peer.g); avatars = avatars.filter(function(a){ return a.peer !== peer; }); peer.g = null; }
 function rtDraw(force){ // 가까운 순으로 RT.maxDrawn 명만 그립니다. 나머지는 "함께 있어요" 숫자에만 들어갑니다 (사람이 많아도 휴대폰이 느려지지 않게)
@@ -3645,7 +3865,7 @@ function rtEmote(p){
   avatars.forEach(function(a){ if (peer && a.peer === peer) entry = a; });
   var near = Math.hypot((ax || 0) - myAvatar.position.x, (az || 0) - myAvatar.position.z) < 6;
   function sayAs(txt){ if (entry) { entry.sayT = performance.now() + 2600; entry.sayText = txt; } }
-  if (p.k === 'peace') { if (g) bow(g); sayAs('평화를 빕니다'); if (g) fxSparkle(ax, 1.3, az, { n: 12, color: 0xfff0c0, spread: 0.5, rise: 0.5, dur: 1600 }); if (near) toast(who + '님이 평화의 인사를 건넵니다. 평화 버튼으로 답해 보세요.', 2600); }
+  if (p.k === 'peace') { if (g) bow(g); var feMe = !!p.fe && typeof feastToday === 'function' && feastToday(); sayAs(feMe ? '영명축일 축하합니다 ✦' : '평화를 빕니다'); if (feMe) fxPetals(myAvatar.position.x, myAvatar.position.y + 2.0, myAvatar.position.z, 16); if (g) fxSparkle(ax, 1.3, az, { n: 12, color: 0xfff0c0, spread: 0.5, rise: 0.5, dur: 1600 }); if (near) toast(who + '님이 평화의 인사를 건넵니다. 평화 버튼으로 답해 보세요.', 2600); }
   else if (p.k === 'amen') sayAs('아멘');
   else if (p.k === 'cross') { sayAs('✝ 성호'); if (g) fxSparkle(ax, 1.4, az, { n: 8, color: 0xffe6b0, spread: 0.4, rise: 0.4, dur: 1200 }); }
   else if (p.k === 'candle') { fxDove(RACK.x, RACK.y + 1.4, RACK.z); toast(who + '님이 촛불을 올렸습니다' + (p.note ? ' · ' + String(p.note).slice(0, 40) : '') + '.', 3000); setTimeout(refreshCandles, 1500); }
@@ -3655,6 +3875,7 @@ function rtEmote(p){
   else if (p.k === 'cafe') { sayAs('☕ ' + (p.menu || '커피')); }
   else if (p.k === 'bow') { if (g) bow(g); sayAs('성모님께 인사'); }
   else if (p.k === 'adore') { sayAs('🙏 성체조배'); }
+  else if (p.k === 'creche') { sayAs('🙏 구유 경배'); }
   else if (p.k === 'rosary') { sayAs('묵주기도 한 단'); if (g) fxPetals(ax, 2.2, az, 10); }
   else if (p.k === 'organ' && typeof organNote === 'function' && typeof p.f === 'number') { initAudio(); organNote(p.f, 0.2, 0.9, true); if (Date.now() - RT.organToast > 20000) { RT.organToast = Date.now(); toast(who + '님이 오르간을 연주합니다.', 2400); } }
   else if (p.k === 'hymn' && typeof organPlay === 'function' && HYMNS[p.h]) { if (!organ.on) { initAudio(); organPlay(p.h, true); toast(who + '님이 「' + HYMNS[p.h].name + '」을 연주합니다.', 3000); } }
@@ -3670,7 +3891,7 @@ function rtRestId(){ // 표의 줄 번호는 접속마다 새로: 2분 넘게 �
   if (!RT.id) RT.id = rtId(); if (!RTR.sid) RTR.sid = RT.id + '.' + Math.random().toString(36).slice(2, 6); return RTR.sid; }
 function rtRestWrite(force){
   if (!SHARED || !entered) return; var rid = rtRestId();
-  var q = rtPayload(), p = { id: rid, name: q.n, x: q.x, z: q.z, f: q.f, p: q.p, s: q.s, c: Object.assign({ ws: RT.on ? 1 : 0 }, q.c) }, k = JSON.stringify(p), now = Date.now();
+  var q = rtPayload(), p = { id: rid, name: q.n, x: q.x, z: q.z, f: q.f, p: q.p, s: q.s, c: Object.assign({ ws: RT.on ? 1 : 0, b: q.b || 0 }, q.c) }, k = JSON.stringify(p), now = Date.now();
   if (!force) { if (k === RTR.lastKey) { if (now - RTR.lastSent < 15000) return; } else if (!rtRestFast() && now - RTR.lastSent < 15000) return; } // 그대로면 15초마다, 바뀌면 바로(느린 모드에선 15초마다)
   RTR.lastKey = k; RTR.lastSent = now;
   sbFetch('presence?on_conflict=id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(p) })
@@ -3682,7 +3903,7 @@ function rtRestRead(){
   var since = new Date(Date.now() - 30000).toISOString(), q = 'presence?select=id,name,x,z,f,p,s,c,updated_at&updated_at=gte.' + encodeURIComponent(since) + '&id=neq.' + encodeURIComponent(rid) + '&p=neq.gone&limit=300';
   if (RT.on) q += '&c-%3E%3Ews=eq.0'; // 실시간 사용자는 보조 연결인 사람 줄만 (c->>ws = 0)
   return sbFetch(q).then(function(r){ return r.ok ? r.json() : null; })
-    .then(function(rows){ if (!Array.isArray(rows)) return; var m = {}; rows.forEach(function(r){ if (typeof r.x !== 'number' || typeof r.z !== 'number' || r.p === 'gone') return; m[r.id] = [{ id: r.id, n: r.name || '', c: r.c || {}, x: r.x, z: r.z, f: r.f || 0, p: r.p || 'stand', s: typeof r.s === 'number' ? r.s : -1, t: new Date(r.updated_at).getTime() }]; });
+    .then(function(rows){ if (!Array.isArray(rows)) return; var m = {}; rows.forEach(function(r){ if (typeof r.x !== 'number' || typeof r.z !== 'number' || r.p === 'gone') return; m[r.id] = [{ id: r.id, n: r.name || '', c: r.c || {}, b: r.c && r.c.b ? 1 : 0, x: r.x, z: r.z, f: r.f || 0, p: r.p || 'stand', s: typeof r.s === 'number' ? r.s : -1, t: new Date(r.updated_at).getTime() }]; });
       RTR.rows = m; var was = RTR.on; RTR.ok = true; RTR.on = !RT.on; rtMerge(); if (RTR.on !== was) rtStatus(); }).catch(function(){});
 }
 function rtMerge(){ // 표(REST) + 웹소켓 presence 를 합쳐 반영. 실시간 사용자에게 표에만 있는 사람 수(restOnly)가 빠른 모드를 정합니다
@@ -3736,13 +3957,14 @@ function snapshot(kind){
   var gr = g.createLinearGradient(0, H * 0.55, 0, H); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,0.72)'); g.fillStyle = gr; g.fillRect(0, 0, W, H);
   var gt = g.createLinearGradient(0, 0, 0, 220); gt.addColorStop(0, 'rgba(0,0,0,0.45)'); gt.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gt; g.fillRect(0, 0, W, 220);
   g.fillStyle = '#e2a94b'; g.font = '500 30px "Noto Sans KR", sans-serif'; g.fillText('서초동성당 온라인 경당', 64, 96);
-  var d = new Date(), ds = d.getFullYear() + '. ' + (d.getMonth() + 1) + '. ' + d.getDate() + '.';
-  g.fillStyle = 'rgba(255,255,255,0.85)'; g.font = '400 26px "Noto Sans KR", sans-serif'; g.fillText(ds + (me.name ? '  ·  ' + me.name : ''), 64, 140);
+  var d = nowDate(), ds = d.getFullYear() + '. ' + (d.getMonth() + 1) + '. ' + d.getDate() + '.';
+  g.fillStyle = 'rgba(255,255,255,0.85)'; g.font = '400 26px "Noto Sans KR", sans-serif'; g.fillText(ds + (me.name ? '  ·  ' + me.name : '') + (typeof feastToday === 'function' && feastToday() ? '  ·  영명축일 ✦' : ''), 64, 140);
   if (kind === 'card') {
     var v = dailyVerse(); g.fillStyle = '#fff6e6'; g.font = '600 50px "Noto Serif KR", serif'; var lines = wrapLines(g, '“' + v[0] + '”', W - 128), y = H - 150 - (lines.length - 1) * 70;
     lines.forEach(function(ln, i){ g.fillText(ln, 64, y + i * 70); });
     g.fillStyle = '#e2a94b'; g.font = '500 30px "Noto Sans KR", sans-serif'; g.fillText(v[1], 64, H - 80);
   } else { g.fillStyle = '#fff6e6'; g.font = '600 46px "Noto Serif KR", serif'; g.fillText('오늘도 들렀습니다', 64, H - 120); g.fillStyle = 'rgba(255,255,255,0.8)'; g.font = '400 28px "Noto Sans KR", sans-serif'; g.fillText(LIT.label ? LIT.label + ' · 주님의 평화가 함께하기를' : '주님의 평화가 함께하기를', 64, H - 72); }
+  photoFrame(g, W, H); // (v21) 전례색 테두리와 시기 이름
   return c;
 }
 function sharePhoto(kind){
@@ -3762,6 +3984,22 @@ function sharePhoto(kind){
 }
 $('#mo-photo').addEventListener('click', function(){ closeSheets(); setTimeout(function(){ sharePhoto('photo'); }, 350); });
 $('#nt-card').addEventListener('click', function(){ sharePhoto('card'); });
+// ---------- (v21) 기념사진: 전례색 테두리와 시기 이름 · 「내 모습 사진」(카메라가 앞에서 나를 찍음) · 영명축일 표시(snapshot 안) ----------
+function photoFrame(g, W, H){ var col = LIT_COLORS[LIT.color] || LIT_COLORS.green, css = '#' + ('000000' + col.toString(16)).slice(-6); g.save();
+  g.strokeStyle = css; g.lineWidth = 26; g.strokeRect(13, 13, W - 26, H - 26); g.strokeStyle = 'rgba(226,169,75,0.85)'; g.lineWidth = 3; g.strokeRect(36, 36, W - 72, H - 72);
+  var label = LIT.label || (LIT.season === 'ordinary' ? '연중 시기' : ''); if (label) { g.fillStyle = 'rgba(255,255,255,0.92)'; g.font = '500 26px "Noto Sans KR", sans-serif'; g.textAlign = 'right'; g.fillText(label, W - 64, 96); g.textAlign = 'left'; }
+  g.restore(); }
+var sharePhotoBase = sharePhoto;
+sharePhoto = function(kind){ // 'selfie': 아바타 2.6 m 앞, 눈높이 조금 위에서 나를 보고 찍은 뒤 카메라를 되돌립니다 (1인칭이어도 아바타를 잠시 보이게)
+  if (kind !== 'selfie') return sharePhotoBase(kind);
+  var wasV = myAvatar.visible, ax = myAvatar.position.x, ay = myAvatar.position.y, az = myAvatar.position.z, f = state.facing, fx = -Math.sin(f), fz = -Math.cos(f);
+  var seated = myAvatar.userData.pose !== 'stand', look = ay + (seated ? 0.62 : 0.8);
+  myAvatar.visible = true; myAvatar.rotation.y = state.facing;
+  camera.position.set(ax + fx * 2.6 + fz * 0.45, look + 0.45, az + fz * 2.6 - fx * 0.45); camera.lookAt(ax, look, az); camera.updateMatrixWorld(true); updateBillboards();
+  try { sharePhotoBase('photo'); } finally { myAvatar.visible = wasV; camera.position.copy(camPos); camera.lookAt(camLook); updateBillboards(); }
+};
+if ($('#mo-selfie')) $('#mo-selfie').addEventListener('click', function(){ closeSheets(); setTimeout(function(){ sharePhoto('selfie'); }, 350); });
+
 // ---------- live ----------
 function setupLive(){
   var emb = $('#lv-embed'), links = $('#lv-links'), note = $('#lv-note');
@@ -3813,7 +4051,7 @@ myAvatar.position.set(0, 0, 13.4); state.facing = 0; setPose(myAvatar, 'stand');
 camPos.set(0, 2.1, 16.4); camLook.set(0, 1.15, 13.4);
 evalMode();
 $('#enter').addEventListener('click', function(){
-  initAudio(); setSound(true); entered = true; unmuteKick(); audioResume(); rtInit(); recordVisit(); setTimeout(function(){ rtRestWrite(true); rtRestRead(); }, 1500); AMB.nextAt = Date.now() + 6000; musicOnEnter(); // 들어오고 6초 뒤 첫 성가 · (v18) 미사곡 시작
+  initAudio(); setSound(true); entered = true; unmuteKick(); audioResume(); rtInit(); recordVisit(); if (typeof seasonEnter === 'function') seasonEnter(); setTimeout(function(){ rtRestWrite(true); rtRestRead(); }, 1500); AMB.nextAt = Date.now() + 6000; musicOnEnter(); // 들어오고 6초 뒤 첫 성가 · (v18) 미사곡 시작
   if (mode !== 'mass' && !store('chapel-toured')) setTimeout(function(){ if (!anySheetOpen() && !state.special) openSheet('tour'); }, 2600);
   var g = $('#gate'); g.classList.add('away'); setTimeout(function(){ g.hidden = true; }, 700);
   bell(0.35);
@@ -3821,7 +4059,7 @@ $('#enter').addEventListener('click', function(){
   else { setTimeout(function(){ toast('바닥을 누르면 그곳으로 걸어갑니다. 금빛 점 가까이 가면 할 수 있는 일이 뜹니다.', 4200); }, 1200); }
 });
 loadGuest();
-window.__chapelDebug = { camBlock: CAM_BLOCK, desiredCamera: desiredCamera, orbit: orbit, joy: joy, pews: PEWS, groundY: groundY, cafe: CAFE, cafeOrder: cafeOrder, cafeSit: cafeSit, eggs: EGGS, roosterCrow: roosterCrow, petCat: petCat, towerView: towerView, endTower: endTower, confessAmen: confessAmen, confLamp: function(){ return CONF_LAMP; }, nodes: NODES, zones: ZONES, avatarY: function(){ return myAvatar.position.y; }, myPose: function(){ return myAvatar.userData.pose; }, sky: SKY, skyUpdate: skyUpdate, wxSet: wxSet, wxApply: wxApply, music: MUSIC, musicPlay: musicPlay, musicPause: musicPause, saints: SAINTS_INFO, openSaint: openSaint, prayers: prayerList, openConfess: openConfess, buildAvatar: buildAvatar, setPose: setPose, me: function(){ return me; }, applyMe: applyMe, TOPS: TOPS, HATS: HATS, HAIRS: HAIRS, SIZES: SIZES, shafts: SHAFTS, dust: function(){ return DUST; }, loft: LOFT, ambList: ambList, inapp: INAPP, openExternal: openExternal, rtRestLeave: rtRestLeave, rtr: RTR, rtRestRead: rtRestRead, rtRestWrite: rtRestWrite, rtMerge: rtMerge, unmute: UNMUTE, audioResume: audioResume, audioStateText: audioStateText, amb: AMB, ambPlay: ambPlay, ambStop: ambStop, ambNext: ambNext, setHymns: setHymns, bow: bow, bows: bows, rtSeat: rtSeat, hymns: HYMNS, rtDraw: rtDraw, rtHidden: rtHidden, visits: VISITS, countVisits: countVisits, recordVisit: recordVisit, setBig: setBig, padStart: padStart, padStop: padStop, pickGreet: pickGreet, renderCandleNotes: renderCandleNotes, candleCards: candleCards, loadNotices: loadNotices, notices: function(){ return NOTICES; }, rt: RT, rtSync: rtSync, rtEmote: rtEmote, tour: TOUR, tourStart: tourStart, quizStart: quizStart, throwBall: throwBall, ball: BALL, startOrgan: startOrgan, organPlay: organPlay, liturgy: liturgy, LIT: LIT, sharePhoto: sharePhoto, snapshot: snapshot, nextMass: nextMass, billboards: billboards, realImg: REAL_IMG, scene: scene, camera: camera, THREE: THREE, interact: interact, walkTo: walkTo, goSit: goSit, peace: peace, ride: { swing: rideSwing, slide: rideSlide, end: endRide }, dogs: dogs, sister: sister, openArt: openArt, openStation: openStation, petDog: petDog, meetSister: meetSister, openAngelus: openAngelus, photo: function(px, py, pz, lx, ly, lz){ beginSpecial('photo', new THREE.Vector3(px, py, pz), new THREE.Vector3(lx, ly, lz)); camPos.set(px, py, pz); camLook.set(lx, ly, lz); }, photoEnd: endSpecial, fx: { dove: fxDove, petals: fxPetals, halo: fxHalo, sparkle: fxSparkle }, obj: OBJ, inZone: inZone, signCross: signCross, amen: amen, daylight: function(d, az){ SKY.force = (d === null || d === undefined) ? null : d; if (az !== undefined) SKY.forceAz = az; skyUpdate(true); }, teleport: function(x, z, tx, tz){ walker = null; if (state.seated) leaveSeat(); if (CAFE.seat) cafeStand(); myAvatar.position.set(x, groundY(x, z), z); if (tx !== undefined) { faceTo(tx, tz); myAvatar.rotation.y = state.facing; } var w = desiredCamera(); camPos.copy(w.pos); camLook.copy(w.look); }, snapCam: function(){ var w = desiredCamera(); camPos.copy(w.pos); camLook.copy(w.look); }, setJoy: function(x, y){ joy.x = x; joy.y = y; joy.active = !!(x || y); }, openSheet: openSheet, closeSheets: closeSheets, seats: seats, setView: setView, state: function(){ return { mode: mode, seated: state.seated, posture: state.posture, special: state.special, pos: [myAvatar.position.x, myAvatar.position.z], walking: !!walker, view: view, near: nearObj(), candles: rackSlots.filter(function(s){ return s.used; }).length, ride: ride ? ride.kind : null, fx: FX.length }; } };
+window.__chapelDebug = { season: SEASON, creche: CRECHE, nowDate: nowDate, when: WHEN, feast: { today: feastToday, cands: feastCandidates, render: renderFeastUI, announce: feastAnnounce, set: feastSet }, rtPayload: rtPayload, renderCreche: renderCreche, openCreche: openCreche, seasonEnter: seasonEnter, camBlock: CAM_BLOCK, desiredCamera: desiredCamera, orbit: orbit, joy: joy, pews: PEWS, groundY: groundY, cafe: CAFE, cafeOrder: cafeOrder, cafeSit: cafeSit, eggs: EGGS, roosterCrow: roosterCrow, petCat: petCat, towerView: towerView, endTower: endTower, confessAmen: confessAmen, confLamp: function(){ return CONF_LAMP; }, nodes: NODES, zones: ZONES, avatarY: function(){ return myAvatar.position.y; }, myPose: function(){ return myAvatar.userData.pose; }, sky: SKY, skyUpdate: skyUpdate, wxSet: wxSet, wxApply: wxApply, music: MUSIC, musicPlay: musicPlay, musicPause: musicPause, saints: SAINTS_INFO, openSaint: openSaint, prayers: prayerList, openConfess: openConfess, buildAvatar: buildAvatar, setPose: setPose, me: function(){ return me; }, applyMe: applyMe, TOPS: TOPS, HATS: HATS, HAIRS: HAIRS, SIZES: SIZES, shafts: SHAFTS, dust: function(){ return DUST; }, loft: LOFT, ambList: ambList, inapp: INAPP, openExternal: openExternal, rtRestLeave: rtRestLeave, rtr: RTR, rtRestRead: rtRestRead, rtRestWrite: rtRestWrite, rtMerge: rtMerge, unmute: UNMUTE, audioResume: audioResume, audioStateText: audioStateText, amb: AMB, ambPlay: ambPlay, ambStop: ambStop, ambNext: ambNext, setHymns: setHymns, bow: bow, bows: bows, rtSeat: rtSeat, hymns: HYMNS, rtDraw: rtDraw, rtHidden: rtHidden, visits: VISITS, countVisits: countVisits, recordVisit: recordVisit, setBig: setBig, padStart: padStart, padStop: padStop, pickGreet: pickGreet, renderCandleNotes: renderCandleNotes, candleCards: candleCards, loadNotices: loadNotices, notices: function(){ return NOTICES; }, rt: RT, rtSync: rtSync, rtEmote: rtEmote, tour: TOUR, tourStart: tourStart, quizStart: quizStart, throwBall: throwBall, ball: BALL, startOrgan: startOrgan, organPlay: organPlay, liturgy: liturgy, LIT: LIT, sharePhoto: sharePhoto, snapshot: snapshot, nextMass: nextMass, billboards: billboards, realImg: REAL_IMG, scene: scene, camera: camera, THREE: THREE, interact: interact, walkTo: walkTo, goSit: goSit, peace: peace, ride: { swing: rideSwing, slide: rideSlide, end: endRide }, dogs: dogs, sister: sister, openArt: openArt, openStation: openStation, petDog: petDog, meetSister: meetSister, openAngelus: openAngelus, photo: function(px, py, pz, lx, ly, lz){ beginSpecial('photo', new THREE.Vector3(px, py, pz), new THREE.Vector3(lx, ly, lz)); camPos.set(px, py, pz); camLook.set(lx, ly, lz); }, photoEnd: endSpecial, fx: { dove: fxDove, petals: fxPetals, halo: fxHalo, sparkle: fxSparkle }, obj: OBJ, inZone: inZone, signCross: signCross, amen: amen, daylight: function(d, az){ SKY.force = (d === null || d === undefined) ? null : d; if (az !== undefined) SKY.forceAz = az; skyUpdate(true); }, teleport: function(x, z, tx, tz){ walker = null; if (state.seated) leaveSeat(); if (CAFE.seat) cafeStand(); myAvatar.position.set(x, groundY(x, z), z); if (tx !== undefined) { faceTo(tx, tz); myAvatar.rotation.y = state.facing; } var w = desiredCamera(); camPos.copy(w.pos); camLook.copy(w.look); }, snapCam: function(){ var w = desiredCamera(); camPos.copy(w.pos); camLook.copy(w.look); }, setJoy: function(x, y){ joy.x = x; joy.y = y; joy.active = !!(x || y); }, openSheet: openSheet, closeSheets: closeSheets, seats: seats, setView: setView, state: function(){ return { mode: mode, seated: state.seated, posture: state.posture, special: state.special, pos: [myAvatar.position.x, myAvatar.position.z], walking: !!walker, view: view, near: nearObj(), candles: rackSlots.filter(function(s){ return s.used; }).length, ride: ride ? ride.kind : null, fx: FX.length }; } };
 })();
 </script>
 
