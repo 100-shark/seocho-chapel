@@ -154,6 +154,8 @@ body.mass #toast{top:auto;bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 #me-feast-custom select{width:auto;flex:1}
 #vigil{position:fixed;inset:0;background:#06040a;z-index:2;pointer-events:none;opacity:1;transition:opacity 13s ease-in}
 #vigil.lift{opacity:0}
+.wd-hero{display:flex;gap:14px;align-items:center;background:linear-gradient(135deg,#13305e,#1d3f7a);border-radius:16px;padding:14px 16px;margin:0 0 12px;color:#fff}.wd-days{text-align:center;min-width:90px}.wd-days b{display:block;font-family:var(--serif);font-size:36px;line-height:1}.wd-days span{font-size:11.5px;letter-spacing:.06em;opacity:.85}.wd-when b{display:block;font-size:15px;margin-bottom:3px}.wd-when span{font-size:12.5px;opacity:.85;line-height:1.5}
+#it-wyd.on{background:rgba(226,169,75,.18);border-color:var(--accent);color:var(--accent)}body.big .wd-days b{font-size:42px}body.contrast .wd-hero{background:#000;border:1px solid #fff}
 .camp-card{background:rgba(226,169,75,.08);border:1px solid rgba(226,169,75,.35);border-radius:16px;padding:14px 16px;margin:0 0 12px}.camp-card .row{margin-top:10px}
 .camp-t{font-family:var(--serif);font-weight:600;font-size:18px;margin-top:2px}.camp-i{font-size:14px;color:var(--muted);margin-top:3px;line-height:1.5}
 .camp-bar{height:10px;background:rgba(255,255,255,.12);border-radius:6px;overflow:hidden;margin:10px 0 6px}.camp-bar i{display:block;height:100%;width:0;background:var(--accent);border-radius:6px;transition:width .6s ease}.camp-bar.big{height:14px}
@@ -329,6 +331,7 @@ body.mass #joy{opacity:.35}
 <div class="sheet" id="sh-intention" role="dialog" aria-label="기도 지향">
   <div class="sh-head"><div><div class="eyebrow">기도 지향 · 비공개</div><h2>함께 기도해 주세요</h2></div><button class="x" data-close>닫기</button></div>
   <p class="muted" id="it-note">여기 적은 지향은 벽에 걸리지 않고 본당에만 전해집니다. 묵주기도와 미사 때 함께 기억합니다.</p>
+  <div class="row" style="margin-bottom:8px"><button class="ghost" id="it-wyd" type="button">WYD·청년을 위해</button><p class="muted" id="it-wyd-note" hidden>이 지향은 본당 WYD 분과가 따로 모아 봅니다.</p></div>
   <textarea id="it-text" maxlength="200" placeholder="예: 수술을 앞둔 어머니를 위해"></textarea>
   <input type="text" id="it-name" maxlength="12" placeholder="이름 또는 세례명 (선택)" autocomplete="off">
   <div class="row"><button class="primary" id="it-send">지향 보내기</button><p class="muted" id="it-msg"></p></div>
@@ -343,6 +346,17 @@ body.mass #joy{opacity:.35}
   <div id="lv-embed"></div>
   <div class="row" id="lv-links"></div>
   <p class="muted" id="lv-note"></p>
+</div>
+
+<!-- (v24) WYD 2027 서울 코너 -->
+<div class="sheet" id="sh-wyd" role="dialog" aria-label="WYD 2027 서울">
+  <div class="sh-head"><div><div class="eyebrow">2027 서울 세계청년대회</div><h2 id="wd-title">WYD 2027 서울</h2></div><button class="x" data-close>닫기</button></div>
+  <div class="wd-hero"><div class="wd-days"><b id="wd-d">—</b><span id="wd-dl">일 남음</span></div><div class="wd-when"><b>2027년 8월 3일(화) ~ 8일(일) · 서울</b><span>교구 체험(7월 29일 ~ 8월 2일)에는 전국 본당과 가정이 순례자를 맞이합니다. 교황님께서 함께하십니다.</span></div></div>
+  <div class="tap static"><span class="tap-label">주제 성구</span><span class="tap-text">“용기를 내어라! 내가 세상을 이겼다.” (요한 16,33)</span><span class="tap-hint">이 경당 정면의 현수막에도 걸려 있는 말씀입니다.</span></div>
+  <div class="tap static"><span class="tap-label">준비하며 바치는 기도</span><span class="tap-text" id="wd-prayer"></span><span class="tap-hint">본당 WYD 분과가 공지 제목 「[WYD 기도문] …」으로 올리면 그 글로 바뀝니다.</span></div>
+  <div id="wd-news"></div>
+  <div class="row" style="margin-top:12px"><button class="primary" id="wd-intent" type="button">WYD·청년을 위한 지향 보내기</button><button class="ghost" id="wd-camp" type="button" hidden>지금 캠페인</button></div>
+  <p class="muted">청년 사도단은 지하 카페 꿈빠니스 안쪽 「청년 사도단 자리」에 모입니다. 참가 신청과 문의는 본당 WYD 분과로, 대회 소식은 공식 앱 「WYD 2027」(앱스토어·플레이스토어)에서 볼 수 있습니다.</p>
 </div>
 
 <!-- (v23) 기도 캠페인: 목표를 함께 채우는 창 (봉헌 더하기 · 봉헌 명단) -->
@@ -385,7 +399,7 @@ body.mass #joy{opacity:.35}
   <div><label class="lbl">머리색</label><div class="sws" id="me-hairc"></div></div>
   <div><label class="lbl">표정</label><div class="seg" id="me-face"></div></div>
   <div><label class="lbl">모자</label><div class="seg" id="me-hat"></div></div>
-  <div><label class="lbl">꾸미기</label><div class="seg" id="me-extras"><button data-k="veil" type="button">미사보</button><button data-k="rosary" type="button">묵주 들기</button><button data-k="glasses" type="button">안경</button><button data-k="bangs" type="button">앞머리</button><button data-k="skirt" type="button" id="me-skirt-l">치마</button><button data-k="scarf" type="button">목도리</button><button data-k="necklace" type="button">십자가 목걸이</button><button data-k="bag" type="button">가방</button></div></div>
+  <div><label class="lbl">꾸미기</label><div class="seg" id="me-extras"><button data-k="veil" type="button">미사보</button><button data-k="rosary" type="button">묵주 들기</button><button data-k="glasses" type="button">안경</button><button data-k="bangs" type="button">앞머리</button><button data-k="skirt" type="button" id="me-skirt-l">치마</button><button data-k="scarf" type="button">목도리</button><button data-k="necklace" type="button">십자가 목걸이</button><button data-k="bag" type="button">가방</button><button data-k="wyd" type="button">WYD 배지</button></div></div>
   <div><label class="lbl">키</label><div class="seg" id="me-size"></div></div>
   <div class="row"><button class="ghost" id="me-reset" type="button">처음 모습으로</button><p class="muted">이 기기에 저장되고, 다른 사람이 들어오면 이 모습으로 보입니다.</p></div>
 </div>
@@ -411,6 +425,7 @@ body.mass #joy{opacity:.35}
     <button id="mo-prayers"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h12"/><path d="M11 7v6M8 10h6"/></svg>기도서<small>18가지</small></button>
     <button id="mo-confess"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M8 7h8M8 10h8M8 13h8"/><path d="M12 17v1"/></svg>고해소<small>양심 성찰</small></button>
     <button data-open="music"><svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>미사곡<small>성가대석</small></button>
+    <button id="mo-wyd"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>WYD 2027<small>서울 세계청년대회</small></button>
     <button id="mo-cafe"><svg viewBox="0 0 24 24"><path d="M4 8h12v6a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z"/><path d="M16 10h2a2 2 0 0 1 0 4h-2"/><path d="M7 4v2M10 3v3M13 4v2"/></svg>꿈빠니스<small>지하 카페</small></button>
   </div>
   <div class="row"><button class="ghost" id="snd-toggle">소리 끄기</button><button class="ghost" id="snd-bell">종 한 번 울리기</button><button class="ghost" id="look-toggle">화면 끌기 방향 바꾸기</button><button class="ghost" id="share-btn">경당 주소 복사</button><button class="ghost" id="big-toggle">큰 글씨</button><button class="ghost" id="contrast-toggle">고대비</button><button class="ghost" id="qual-toggle">화질: 자동</button><button class="ghost" id="simple-toggle">간단 모드 (3D 없이)</button><button class="ghost" id="hymn-toggle">성가 끄기</button><button class="ghost" id="hymn-play">성가 지금 듣기</button><button class="ghost" id="inapp-more" hidden>크롬/사파리로 열기</button></div>
@@ -418,7 +433,7 @@ body.mass #joy{opacity:.35}
   <p class="muted" id="snd-state"></p>
   <p class="muted" id="qual-state"></p>
   <p class="muted" id="who-list"></p>
-  <p class="muted">오른쪽 아래 조이스틱으로 걷고, 바닥을 누르면 그곳으로 걸어가고, 신자석을 누르면 그 자리에 앉습니다. 벽의 성화와 십자가의 길, 성수대·방명록대·종줄·게시판·제대·감실·오르간, 문밖 마당의 성모자상·촛불 봉헌대·그네·미끄럼틀·공, 그리고 돌아다니는 수녀님과 강아지 우주·사과 가까이 가면 아래에 할 수 있는 일이 뜹니다. 입구 위 성가대석에서는 미사곡이 흐르고, 입구 왼쪽 고해소 앞에서는 양심 성찰을, 성요셉상·성모상·루르드 성모상·예수 성심상 앞에서는 그분들 이야기와 기도를 볼 수 있습니다. 하늘은 서초동의 실제 해와 달의 자리를, 비와 눈은 지금 날씨를 따릅니다. 입구 오른쪽 벽의 문으로 내려가면 지하 카페 꿈빠니스가 있고, 문밖 넓은 돌계단 아래가 마당입니다. 마당과 종탑, 밤하늘, 카페에는 숨은 재미 일곱 가지가 있어요(안내에서 몇 개 찾았는지 보입니다). 자체 주소의 경당에서는 지금 들어와 있는 형제자매가 실제로 보이고, 평화의 인사·촛불·종소리가 서로에게 전해집니다. 화면을 끌면 둘러보고, 오전 6시·정오·오후 6시에는 삼종기도 종이 울립니다. 대림·성탄 시기에는 제대 오른쪽에 구유가, 마당에 성탄 트리가 놓이고, 동방박사는 성탄부터 주님 공현까지 오른쪽 통로를 따라 구유로 갑니다. 재의 수요일엔 이마에 재를, 성지 주일엔 종려가지를 들고, 사순 제5주일부터는 성상이 보라 천으로 가려집니다. 「내 모습」에서 영명축일을 고르면 그날 축하를 받고 이름표에 ✦ 가 붙습니다. 화면이 버벅이면 화질이 자동으로 낮아지고(더보기에서 직접 고를 수도), 「간단 모드」는 3D 없이 말씀·기도·촛불·방명록만 큰 글씨로 보여 줍니다. 「고대비」는 검은 바탕에 흰 글씨입니다. 본당이 기도 캠페인(예: 수능 수험생을 위한 묵주기도 1000단)을 열면 머리글의 🙏 칩과 안내 창에 목표와 지금까지의 수가 보이고, 경당에서 묵주기도 한 단을 마치면 자동으로 더해지며 밖에서 바친 기도는 「더하기」로 올립니다.</p>
+  <p class="muted">오른쪽 아래 조이스틱으로 걷고, 바닥을 누르면 그곳으로 걸어가고, 신자석을 누르면 그 자리에 앉습니다. 벽의 성화와 십자가의 길, 성수대·방명록대·종줄·게시판·제대·감실·오르간, 문밖 마당의 성모자상·촛불 봉헌대·그네·미끄럼틀·공, 그리고 돌아다니는 수녀님과 강아지 우주·사과 가까이 가면 아래에 할 수 있는 일이 뜹니다. 입구 위 성가대석에서는 미사곡이 흐르고, 입구 왼쪽 고해소 앞에서는 양심 성찰을, 성요셉상·성모상·루르드 성모상·예수 성심상 앞에서는 그분들 이야기와 기도를 볼 수 있습니다. 하늘은 서초동의 실제 해와 달의 자리를, 비와 눈은 지금 날씨를 따릅니다. 입구 오른쪽 벽의 문으로 내려가면 지하 카페 꿈빠니스가 있고, 문밖 넓은 돌계단 아래가 마당입니다. 마당과 종탑, 밤하늘, 카페에는 숨은 재미 일곱 가지가 있어요(안내에서 몇 개 찾았는지 보입니다). 자체 주소의 경당에서는 지금 들어와 있는 형제자매가 실제로 보이고, 평화의 인사·촛불·종소리가 서로에게 전해집니다. 화면을 끌면 둘러보고, 오전 6시·정오·오후 6시에는 삼종기도 종이 울립니다. 대림·성탄 시기에는 제대 오른쪽에 구유가, 마당에 성탄 트리가 놓이고, 동방박사는 성탄부터 주님 공현까지 오른쪽 통로를 따라 구유로 갑니다. 재의 수요일엔 이마에 재를, 성지 주일엔 종려가지를 들고, 사순 제5주일부터는 성상이 보라 천으로 가려집니다. 「내 모습」에서 영명축일을 고르면 그날 축하를 받고 이름표에 ✦ 가 붙습니다. 화면이 버벅이면 화질이 자동으로 낮아지고(더보기에서 직접 고를 수도), 「간단 모드」는 3D 없이 말씀·기도·촛불·방명록만 큰 글씨로 보여 줍니다. 「고대비」는 검은 바탕에 흰 글씨입니다. 본당이 기도 캠페인(예: 수능 수험생을 위한 묵주기도 1000단)을 열면 머리글의 🙏 칩과 안내 창에 목표와 지금까지의 수가 보이고, 경당에서 묵주기도 한 단을 마치면 자동으로 더해지며 밖에서 바친 기도는 「더하기」로 올립니다. 입구 안쪽 벽 오른편의 WYD 2027 판에서는 서울 세계청년대회 D-day와 주제 성구, 준비 기도, 청년 사도단 소식을 보고 WYD·청년을 위한 지향을 보낼 수 있습니다. 꿈빠니스 안쪽 테이블은 청년 사도단 자리이고, 「내 모습」 꾸미기에 WYD 배지가 있습니다.</p>
   <p class="muted">제대 뒤 벽의 성령 비둘기·놋쇠 광선·청동 십자고상은 서초동성당 제대 실황 화면을, 마당의 성모자상과 제대 양옆의 성요셉상·성모상·루르드 성모상은 본당에서 찍은 사진을 그대로 입힌 것입니다. 벽돌 벽·민트색 카펫·티파니 등·청동 십자가의 길·감실·주례석은 본당 소개 영상(서초동성당2)을 보고 본뜬 것입니다. 마당의 예수 성심상은 위키미디어 공용의 CC0(퍼블릭 도메인 기증) 사진이며, 성가대석의 미사곡은 유튜브 「데일리 가톨릭」의 천사미사곡 영상, 날씨는 Open-Meteo 자료입니다.</p>
   <p class="muted" id="admin-link" hidden><a href="admin/" style="color:var(--accent)">담당자 관리 페이지</a> · 공지 올리기, 방명록 검수</p>
 </div>
@@ -569,6 +584,7 @@ body.mass #joy{opacity:.35}
       <button data-sp="art" type="button">성화 보기<small>14점</small></button>
       <button data-sp="me" type="button">내 이름·영명축일</button>
       <button data-sp="quiz" type="button">교리 퀴즈</button>
+      <button data-sp="wyd" type="button">WYD 2027<small>서울 세계청년대회</small></button>
     </div>
     <div class="row" style="margin-top:14px"><button class="ghost" id="sp-big" type="button">큰 글씨</button><button class="ghost" id="sp-contrast" type="button">고대비</button><button class="primary" id="sp-back" type="button">3D 경당으로</button></div>
     <p class="muted">3D 경당을 멈춘 가벼운 화면입니다. 함께 있는 사람 수는 위에 그대로 보이고, 촛불·방명록·기도 지향도 똑같이 전해집니다.</p>
@@ -1556,6 +1572,7 @@ function buildAvatar(cfg){
   if (cfg.veil && !nun) { hair(G.veil, 0).material = M.veil; var vb = up(new THREE.Mesh(G.veilBand, M.veilDrape), 0, HEAD_Y - 0.27 * HS, 0.05); vb.scale.set(HS, HS, HS); [-1, 1].forEach(function(sd){ var fl = up(new THREE.Mesh(G.veilFlap, M.veilDrape), sd * 0.19, HEAD_Y - 0.18, -0.02); fl.rotation.y = -sd * 0.45; }); }
   if (cfg.scarf && !nun) { var scM = toonMat(cfg.scarfHex || 0xb0242a); up(new THREE.Mesh(AG.scarfS, scM), 0, 1.04, 0).rotation.x = Math.PI / 2; up(new THREE.Mesh(G.box(0.09, 0.22, 0.02), scM), 0.1, 0.9, -(rc(0.9) + 0.02)).rotation.y = 0.15; }
   if (cfg.necklace && !nun) { var ch = up(new THREE.Mesh(AG.chainS, goldM), 0, 1.02, -0.02); ch.rotation.x = Math.PI / 2 - 0.35; up(new THREE.Mesh(AG.crossV, goldM), 0, 0.86, -(rc(0.86) + 0.008)); up(new THREE.Mesh(AG.crossH, goldM), 0, 0.885, -(rc(0.885) + 0.008)); }
+  if (cfg.wyd && !nun) { if (!MAT_CACHE.wydPin) { var wc = document.createElement('canvas'); wc.width = wc.height = 64; var wg = wc.getContext('2d'); wg.fillStyle = '#1d3f7a'; wg.beginPath(); wg.arc(32, 32, 31, 0, Math.PI * 2); wg.fill(); wg.strokeStyle = '#f0a33a'; wg.lineWidth = 4; wg.beginPath(); wg.arc(32, 32, 27, 0, Math.PI * 2); wg.stroke(); wg.fillStyle = '#fff'; wg.textAlign = 'center'; wg.font = '700 19px sans-serif'; wg.fillText('WYD', 32, 30); wg.font = '600 13px sans-serif'; wg.fillText('2027', 32, 46); var wt = new THREE.CanvasTexture(wc); wt.encoding = THREE.sRGBEncoding; MAT_CACHE.wydPin = new THREE.MeshBasicMaterial({ map: wt }); } var pin = up(new THREE.Mesh(new THREE.CircleGeometry(0.034, 18), MAT_CACHE.wydPin), 0.11, 0.9, -(rc(0.9) + 0.008)); pin.rotation.y = Math.PI; } // (v24) WYD 배지
   if (cfg.bag && !nun) { var bgM = toonMat(0x5a3a24); up(new THREE.Mesh(AG.bagS, bgM), rc(0.62) + 0.085, 0.6, 0.02); var st = up(new THREE.Mesh(AG.strapS, bgM), 0.12, 0.86, 0.0); st.rotation.z = -0.55; }
   // 작은 팔
   var arms = {}, wide = top === 'hanbok' || top === 'choir', sleeveM = top === 'server' ? whiteM : (nun ? topM : hiM);
@@ -2363,6 +2380,7 @@ function interact(k){
   else if (k === 'mary' || k === 'joseph' || k === 'lourdes' || k === 'heart') openSaint(k); // (v18) 성상 이야기와 기도 (「인사드리기」가 예전의 절)
   else if (k === 'rack') openSheet('candle');
   else if (k === 'tabernacle') startAdoration();
+  else if (k === 'wyd') openWyd(); // (v24) WYD 코너
   else if (k === 'creche') openCreche(); // (v21) 구유 앞에 무릎 꿇고
   else if (k === 'altar') openSheet('pray');
   else if (k === 'screen') openSheet('live');
@@ -3478,7 +3496,7 @@ var MEDIT = [
 function renderMedit(){ var m = MEDIT[dayOfYear() % MEDIT.length], el = $('#nt-medit'); if (el) el.textContent = '“' + m[0] + '” — ' + m[1]; if (typeof wxLabel === 'function') wxLabel(); }
 renderMedit();
 // ---------- sheets ----------
-var SHEETS = ['campaign','creche','rosary','candle','pray','adore','guest','intention','live','me','more','notice','art','station','sister','angelus','quiz','organ','tour','saint','prayers','confess','music','cafe']; // (v18) 성상·기도서·고해소·미사곡 · (v19) 카페
+var SHEETS = ['wyd','campaign','creche','rosary','candle','pray','adore','guest','intention','live','me','more','notice','art','station','sister','angelus','quiz','organ','tour','saint','prayers','confess','music','cafe']; // (v18) 성상·기도서·고해소·미사곡 · (v19) 카페
 var sheets = {}; SHEETS.forEach(function(k){ sheets[k] = $('#sh-' + k); });
 var btns = { rosary: $('#b-rosary'), candle: $('#b-candle'), more: $('#b-more') };
 function anySheetOpen(){ if (!SHEETS) return false; return SHEETS.some(function(k){ return sheets[k].classList.contains('open'); }); }
@@ -3666,7 +3684,7 @@ var NOTICES = [];
 function renderNotices(){ var el = $('#nt-notices'); if (!el) return; if (!NOTICES.length) { el.hidden = true; return; } el.hidden = false;
   el.innerHTML = '<div class="eyebrow">본당 공지</div>' + NOTICES.map(function(n){ var d = new Date(n.created_at), ds = isNaN(d) ? '' : (d.getMonth() + 1) + '/' + d.getDate(); return '<div class="ntc' + (n.pinned ? ' pin' : '') + '"><div class="ntc-t">' + (n.pinned ? '📌 ' : '') + esc(n.title || '') + '</div>' + (n.body ? '<div class="ntc-b">' + esc(n.body).replace(/\n/g, '<br>') + '</div>' : '') + '<div class="ntc-d">' + ds + '</div></div>'; }).join(''); }
 function loadNotices(){ if (!SHARED) return Promise.resolve();
-  return sbFetch('notices?select=id,title,body,created_at,pinned&active=eq.true&order=pinned.desc,created_at.desc&limit=8').then(function(r){ return r.ok ? r.json() : []; }).then(function(rows){ if (!Array.isArray(rows)) return; NOTICES = rows; renderNotices(); if (typeof drawBoard === 'function') drawBoard(); }).catch(function(){}); }
+  return sbFetch('notices?select=id,title,body,created_at,pinned&active=eq.true&order=pinned.desc,created_at.desc&limit=8').then(function(r){ return r.ok ? r.json() : []; }).then(function(rows){ if (!Array.isArray(rows)) return; NOTICES = rows; renderNotices(); if (typeof wydRender === 'function') wydRender(); if (typeof drawBoard === 'function') drawBoard(); }).catch(function(){}); }
 loadNotices(); setInterval(loadNotices, 300000);
 // ---------- (v23) 기도 캠페인: 본당이 정한 목표(예: 수능 수험생을 위한 묵주기도 1000단)를 함께 채웁니다 ----------
 //   표: campaigns(제목·지향·목표·단위·마감·active) + campaign_entries(이름·n·source) + campaign_totals(합계 뷰). 관리 페이지 「캠페인」 탭에서 만들고, 경당·간단 모드·게시판·묵주기도 창·머리글 칩에 보입니다.
@@ -3727,6 +3745,50 @@ function campSetN(v){ CAMP.n = Math.max(1, Math.min(50, Math.round(v))); var el 
   if ($('#camp-chip')) $('#camp-chip').addEventListener('click', function(){ campOpen(false); });
 })();
 campLoad(); setInterval(campLoad, 300000);
+// ---------- (v24) WYD 2027 서울 코너: 입구 안쪽 벽 오른편 WYD 판(D-day·주제 성구) → 시트(D-day·일정·주제 성구·준비 기도·[WYD] 공지 소식·지향 보내기·캠페인) ----------
+//   대회 2027-08-03(화)~08-08(일) 서울, 교구 체험 07-29~08-02, 주제 "용기를 내어라! 내가 세상을 이겼다"(요한 16,33). 관리 페이지 공지 제목이 「[WYD] …」면 소식으로, 「[WYD 기도문] …」면 그 본문이 기도문이 됩니다.
+//   기도 지향 창의 「WYD·청년을 위해」 토글은 본문 앞에 [WYD] 를 붙여 보냅니다(관리 페이지에서 따로 거름). 꿈빠니스 안쪽 테이블은 「청년 사도단 자리」, 아바타 꾸미기에 「WYD 배지」.
+var WYD = { start: new Date(2027, 7, 3), end: new Date(2027, 7, 8, 23, 59), prayer: '주님, 2027년 서울에서 온 세상 청년들이 당신 이름으로 모입니다. 준비하는 이들에게 지혜와 힘을, 찾아오는 순례자들에게 따뜻한 환대를, 우리 본당 청년들에게 "용기를 내어라, 내가 세상을 이겼다" 하신 말씀을 살아갈 믿음을 주소서. 성모 마리아여, 저희와 함께 걸어 주소서. 아멘.', boardTex: null, boardCanvas: null };
+function wydDays(){ var n = nowDate(), n0 = new Date(n.getFullYear(), n.getMonth(), n.getDate()).getTime(); return Math.round((WYD.start.getTime() - n0) / 86400000); }
+function wydPhase(){ var n = nowDate().getTime(); return n > WYD.end.getTime() ? 'after' : n >= WYD.start.getTime() ? 'during' : 'before'; }
+function wydDLabel(){ var p = wydPhase(); return p === 'during' ? '대회 중' : p === 'after' ? '대회를 마쳤습니다' : 'D-' + wydDays(); }
+function wydNotices(){ return (typeof NOTICES !== 'undefined' && NOTICES) ? NOTICES.filter(function(n){ return /^\s*\[WYD\]/i.test(n.title || ''); }) : []; }
+function wydPrayer(){ var p = (typeof NOTICES !== 'undefined' && NOTICES) ? NOTICES.filter(function(n){ return /^\s*\[WYD 기도문\]/i.test(n.title || '') && n.body; })[0] : null; return p ? p.body : WYD.prayer; }
+function wydIntentOn(){ var b = $('#it-wyd'); return !!(b && b.classList.contains('on')); }
+function wydIntentSet(on){ var b = $('#it-wyd'), nt = $('#it-wyd-note'), ta = $('#it-text'); if (b) b.classList.toggle('on', !!on); if (nt) nt.hidden = !on; if (ta) ta.placeholder = on ? '예: 청년 사도단과 서울에 올 순례자들을 위해' : '예: 수술을 앞둔 어머니를 위해'; }
+function wydRender(){ if (!$('#sh-wyd')) return; var lab = wydDLabel();
+  $('#wd-title').textContent = 'WYD 2027 서울 · ' + lab; $('#wd-d').textContent = wydPhase() === 'before' ? wydDays() : (wydPhase() === 'during' ? '●' : '✓'); $('#wd-dl').textContent = wydPhase() === 'before' ? '일 남음' : lab;
+  $('#wd-prayer').textContent = wydPrayer();
+  var news = wydNotices(), el = $('#wd-news'); el.innerHTML = '<div class="eyebrow">WYD · 청년 사도단 소식</div>' + (news.length ? news.map(function(n){ var d = new Date(n.created_at), ds = isNaN(d) ? '' : (d.getMonth() + 1) + '/' + d.getDate(); return '<div class="ntc' + (n.pinned ? ' pin' : '') + '"><div class="ntc-t">' + (n.pinned ? '📌 ' : '') + esc(String(n.title).replace(/^\s*\[WYD\]\s*/i, '')) + '</div>' + (n.body ? '<div class="ntc-b">' + esc(n.body).replace(/\n/g, '<br>') + '</div>' : '') + '<div class="ntc-d">' + ds + '</div></div>'; }).join('') : '<p class="muted">아직 소식이 없습니다. 관리 페이지에서 공지 제목을 「[WYD] …」로 올리면 여기 모입니다.</p>');
+  var cb = $('#wd-camp'); if (cb) { var on = typeof CAMP !== 'undefined' && CAMP && CAMP.on; cb.hidden = !on; if (on) cb.textContent = '지금 캠페인 · ' + CAMP.c.title; }
+  drawWydBoard(); }
+function drawWydBoard(){ if (!WYD.boardCanvas) return; var c = WYD.boardCanvas, g = c.getContext('2d'), W2 = c.width, H2 = c.height;
+  var bg = g.createLinearGradient(0, 0, W2, H2); bg.addColorStop(0, '#13305e'); bg.addColorStop(1, '#1d3f7a'); g.fillStyle = bg; g.fillRect(0, 0, W2, H2);
+  g.fillStyle = '#f0a33a'; g.fillRect(0, 0, W2, 54); g.fillStyle = '#1a1206'; g.font = '600 26px "Noto Sans KR", sans-serif'; g.textAlign = 'left'; g.fillText('2027 서울 세계청년대회', 22, 37);
+  g.fillStyle = '#ffffff'; g.font = '800 54px "Noto Sans KR", sans-serif'; g.fillText('WYD 2027', 22, 124); g.font = '500 24px "Noto Sans KR", sans-serif'; g.fillText('2027. 8. 3(화) – 8. 8(일) · 서울', 22, 164);
+  var lab = wydDLabel(); g.textAlign = 'right'; g.fillStyle = '#ffd98a'; g.font = '800 44px "Noto Sans KR", sans-serif'; g.fillText(lab, W2 - 22, 124); g.textAlign = 'left'; // 제목(왼쪽)과 D-day(오른쪽)가 겹치지 않는 크기
+  g.fillStyle = 'rgba(255,255,255,0.92)'; g.font = '600 25px "Noto Serif KR", serif'; g.fillText('“용기를 내어라! 내가 세상을 이겼다.”', 22, 226); g.font = '400 20px "Noto Sans KR", sans-serif'; g.fillStyle = 'rgba(255,255,255,0.75)'; g.fillText('요한 16,33', 22, 256);
+  g.fillStyle = '#f0a33a'; g.font = '500 20px "Noto Sans KR", sans-serif'; g.fillText('청년 사도단 · 본당 WYD 분과 · 누르면 소식과 기도', 22, 318);
+  if (WYD.boardTex) WYD.boardTex.needsUpdate = true; }
+(function buildWydCorner(){ // 입구 안쪽 벽 오른편(게시판 3.6 의 반대쪽 짝): 어두운 틀 + 포스터
+  var c = document.createElement('canvas'); c.width = 512; c.height = 352; WYD.boardCanvas = c; var t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; WYD.boardTex = t; drawWydBoard();
+  mesh(G.box(2.3, 1.7, 0.06), M.darkwood, 7.6, 2.05, L/2 - 0.2); var pl = mesh(new THREE.PlaneGeometry(2.1, 1.45), new THREE.MeshBasicMaterial({ map: t }), 7.6, 2.05, L/2 - 0.24, 'wyd'); pl.rotation.y = Math.PI;
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawWydBoard);
+  OBJ.wyd = { name: 'WYD 2027 코너', verb: '보기', at: [7.6, 14.76], go: [7.3, 13.5], range: 2.0, hint: [7.6, 3.15, 14.5] };
+  var o = OBJ.wyd, s = glow(0.28, 0.75); s.material.color.setHex(0xe2a94b); s.position.set(o.hint[0], o.hint[1], o.hint[2]); s.userData.action = 'wyd'; s.userData.baseY = o.hint[1]; scene.add(s); interactables.push(s); hints.wyd = s;
+  // 꿈빠니스 안쪽 테이블(cafe5): 「청년 사도단 자리」 탁상 팻말
+  if (OBJ.cafe5) OBJ.cafe5.name = '청년 사도단 자리';
+  (function(){ var tc = document.createElement('canvas'); tc.width = 256; tc.height = 96; var tg = tc.getContext('2d'); tg.fillStyle = '#f6f2ea'; tg.fillRect(0, 0, 256, 96); tg.fillStyle = '#1d3f7a'; tg.fillRect(0, 0, 256, 14); tg.fillStyle = '#1a1206'; tg.font = '700 30px "Noto Sans KR", sans-serif'; tg.textAlign = 'center'; tg.fillText('청년 사도단 자리', 128, 58); tg.fillStyle = '#7a6a55'; tg.font = '500 16px "Noto Sans KR", sans-serif'; tg.fillText('WYD 2027 준비 모임', 128, 84);
+    var tt = new THREE.CanvasTexture(tc); tt.encoding = THREE.sRGBEncoding; var tx = 28.4 + CDX, tz = 15.0, ty = CAFE_Y + 0.74 + 0.03;
+    [1, -1].forEach(function(sd){ var card = mesh(new THREE.PlaneGeometry(0.36, 0.135), new THREE.MeshBasicMaterial({ map: tt, side: THREE.DoubleSide }), tx, ty + 0.066, tz + sd * 0.028, 'cafe5'); card.rotation.y = sd > 0 ? 0 : Math.PI; card.rotation.x = -sd * 0.35; }); })(); // 양면 탁상 팻말(앞뒤)
+})();
+function openWyd(){ wydRender(); openSheet('wyd'); }
+if ($('#wd-intent')) $('#wd-intent').addEventListener('click', function(){ openSheet('intention'); wydIntentSet(true); });
+if ($('#wd-camp')) $('#wd-camp').addEventListener('click', function(){ if (typeof campOpen === 'function') campOpen(false); });
+if ($('#it-wyd')) $('#it-wyd').addEventListener('click', function(){ wydIntentSet(!wydIntentOn()); });
+if ($('#mo-wyd')) $('#mo-wyd').addEventListener('click', function(){ closeSheets(); setTimeout(openWyd, 250); });
+setInterval(drawWydBoard, 3600000); // D-day 가 자정을 넘기면 판도 바뀌게
+
 setInterval(function(){ if (!CAMP.on || !entered) return; var open = typeof sheets !== 'undefined' && sheets.campaign && sheets.campaign.classList.contains('open'); if (Date.now() - CAMP.lastFetch >= (open ? 10000 : 30000)) campRefresh(); }, 2000);
 
 if (SHARED && $('#admin-link')) $('#admin-link').hidden = false;
@@ -3833,7 +3895,7 @@ $('#gb-send').addEventListener('click', function(){
   loadGuest();
 });
 $('#it-send').addEventListener('click', function(){
-  var body = $('#it-text').value.trim(), name = $('#it-name').value.trim().slice(0, 12);
+  var raw = $('#it-text').value.trim(), body = (raw && typeof wydIntentOn === 'function' && wydIntentOn()) ? '[WYD] ' + raw : raw, name = $('#it-name').value.trim().slice(0, 12); // (v24) WYD·청년 지향
   if (!body) { $('#it-msg').textContent = '지향을 적어주세요.'; return; }
   if (!canPost('intention')) { $('#it-msg').textContent = '잠시 후에 다시 보낼 수 있습니다.'; return; }
   $('#it-text').value = ''; initAudio(); chime();
@@ -3887,7 +3949,7 @@ renderRosary();
 var RT = { on: false, ch: null, sb: null, peers: {}, id: null, lastSent: 0, lastKey: '', hb: 0, synced: false, organToast: 0, maxDrawn: 24, drawT: 0 }; // maxDrawn: 한 번에 그리는 다른 사람 아바타 수
 function rtId(){ var id = store('chapel-rtid'); if (!id) { id = 'p' + Math.random().toString(36).slice(2, 10); store('chapel-rtid', id); } return id; }
 function rtCfg(){ var c = { cloth: me.cloth, hair: me.hair, hairc: me.hairc, veil: !!me.veil, rosary: !!me.rosary, skin: me.skin, face: me.face, glasses: !!me.glasses, bangs: me.bangs !== false, skirt: !!me.skirt, bottom: me.bottom }; // (v18) 새 항목은 기본값이 아닐 때만 실어 보냅니다
-  ['top', 'hat', 'size', 'clothHex', 'haircHex', 'hatc'].forEach(function(k){ var v = me[k]; if (v !== undefined && v !== null && v !== 'none' && v !== 'plain' && v !== 'normal') c[k] = v; }); ['scarf', 'necklace', 'bag'].forEach(function(k){ if (me[k]) c[k] = true; }); return c; }
+  ['top', 'hat', 'size', 'clothHex', 'haircHex', 'hatc'].forEach(function(k){ var v = me[k]; if (v !== undefined && v !== null && v !== 'none' && v !== 'plain' && v !== 'normal') c[k] = v; }); ['scarf', 'necklace', 'bag', 'wyd'].forEach(function(k){ if (me[k]) c[k] = true; }); return c; }
 function rtPayload(){ return { id: RT.id, n: (me.name || '').slice(0, 12), c: rtCfg(), x: Math.round(myAvatar.position.x * 100) / 100, z: Math.round(myAvatar.position.z * 100) / 100, f: Math.round(state.facing * 100) / 100, p: myAvatar.userData.pose || 'stand', s: state.seated && mySeat ? seats.indexOf(mySeat) : -1, b: (typeof feastToday === 'function' && feastToday()) ? 1 : 0, t: Date.now() }; } // (v21) b: 오늘 영명축일
 function rtKey(p){ return [p.n, p.x, p.z, p.f, p.p, p.s, p.b, JSON.stringify(p.c)].join('|'); }
 function rtInit(){
@@ -4239,7 +4301,7 @@ function simpleEnter(){ if (SIMPLE.want) { SIMPLE.want = false; setTimeout(simpl
 if ($('#enter-simple')) $('#enter-simple').addEventListener('click', function(){ SIMPLE.want = true; $('#enter').click(); });
 if ($('#simple-toggle')) $('#simple-toggle').addEventListener('click', function(){ closeSheets(); if (SIMPLE.on) simpleOff(); else simpleOn(); });
 document.querySelectorAll('#simple [data-sp]').forEach(function(b){ b.addEventListener('click', function(){ var k = b.getAttribute('data-sp');
-  if (k === 'station') openStation(0); else if (k === 'art') openArt(0); else if (k === 'angelus') openAngelus(); else if (k === 'saint') openSaint('mary'); else if (k === 'confess') openConfess(); else openSheet(k); }); });
+  if (k === 'wyd') openWyd(); else if (k === 'station') openStation(0); else if (k === 'art') openArt(0); else if (k === 'angelus') openAngelus(); else if (k === 'saint') openSaint('mary'); else if (k === 'confess') openConfess(); else openSheet(k); }); });
 if ($('#sp-back')) $('#sp-back').addEventListener('click', simpleOff);
 if ($('#sp-big')) $('#sp-big').addEventListener('click', function(){ setBig(!document.body.classList.contains('big')); });
 if ($('#sp-voice')) $('#sp-voice').addEventListener('click', function(){ initAudio(); if (typeof TTS === 'undefined' || !TTS.ok) { toast('이 기기에서는 읽어 주기를 쓸 수 없습니다.', 2000); return; } var v = dailyVerse(); speak(v[0] + '. ' + v[1]); });
@@ -4248,7 +4310,7 @@ function setContrast(on){ document.body.classList.toggle('contrast', !!on); stor
 setContrast(!!store('chapel-contrast'));
 if ($('#contrast-toggle')) $('#contrast-toggle').addEventListener('click', function(){ setContrast(!document.body.classList.contains('contrast')); });
 if ($('#sp-contrast')) $('#sp-contrast').addEventListener('click', function(){ setContrast(!document.body.classList.contains('contrast')); });
-window.__chapelDebug = { camp: CAMP, campLoad: campLoad, campRefresh: campRefresh, campPost: campPost, campAuto: campAuto, campOpen: campOpen, drawBoard: drawBoard, qual: QUAL, qualLevels: QUAL_LEVELS, setQuality: setQuality, qualTick: qualTick, simple: SIMPLE, simpleOn: simpleOn, simpleOff: simpleOff, setContrast: setContrast, ev: EV, logEvent: logEvent, isRunning: function(){ return running; }, renderer: renderer, shafts: SHAFTS, season: SEASON, creche: CRECHE, nowDate: nowDate, when: WHEN, feast: { today: feastToday, cands: feastCandidates, render: renderFeastUI, announce: feastAnnounce, set: feastSet }, rtPayload: rtPayload, renderCreche: renderCreche, openCreche: openCreche, seasonEnter: seasonEnter, camBlock: CAM_BLOCK, desiredCamera: desiredCamera, orbit: orbit, joy: joy, pews: PEWS, groundY: groundY, cafe: CAFE, cafeOrder: cafeOrder, cafeSit: cafeSit, eggs: EGGS, roosterCrow: roosterCrow, petCat: petCat, towerView: towerView, endTower: endTower, confessAmen: confessAmen, confLamp: function(){ return CONF_LAMP; }, nodes: NODES, zones: ZONES, avatarY: function(){ return myAvatar.position.y; }, myPose: function(){ return myAvatar.userData.pose; }, sky: SKY, skyUpdate: skyUpdate, wxSet: wxSet, wxApply: wxApply, music: MUSIC, musicPlay: musicPlay, musicPause: musicPause, saints: SAINTS_INFO, openSaint: openSaint, prayers: prayerList, openConfess: openConfess, buildAvatar: buildAvatar, setPose: setPose, me: function(){ return me; }, applyMe: applyMe, TOPS: TOPS, HATS: HATS, HAIRS: HAIRS, SIZES: SIZES, shafts: SHAFTS, dust: function(){ return DUST; }, loft: LOFT, ambList: ambList, inapp: INAPP, openExternal: openExternal, rtRestLeave: rtRestLeave, rtr: RTR, rtRestRead: rtRestRead, rtRestWrite: rtRestWrite, rtMerge: rtMerge, unmute: UNMUTE, audioResume: audioResume, audioStateText: audioStateText, amb: AMB, ambPlay: ambPlay, ambStop: ambStop, ambNext: ambNext, setHymns: setHymns, bow: bow, bows: bows, rtSeat: rtSeat, hymns: HYMNS, rtDraw: rtDraw, rtHidden: rtHidden, visits: VISITS, countVisits: countVisits, recordVisit: recordVisit, setBig: setBig, padStart: padStart, padStop: padStop, pickGreet: pickGreet, renderCandleNotes: renderCandleNotes, candleCards: candleCards, loadNotices: loadNotices, notices: function(){ return NOTICES; }, rt: RT, rtSync: rtSync, rtEmote: rtEmote, tour: TOUR, tourStart: tourStart, quizStart: quizStart, throwBall: throwBall, ball: BALL, startOrgan: startOrgan, organPlay: organPlay, liturgy: liturgy, LIT: LIT, sharePhoto: sharePhoto, snapshot: snapshot, nextMass: nextMass, billboards: billboards, realImg: REAL_IMG, scene: scene, camera: camera, THREE: THREE, interact: interact, walkTo: walkTo, goSit: goSit, peace: peace, ride: { swing: rideSwing, slide: rideSlide, end: endRide }, dogs: dogs, sister: sister, openArt: openArt, openStation: openStation, petDog: petDog, meetSister: meetSister, openAngelus: openAngelus, photo: function(px, py, pz, lx, ly, lz){ beginSpecial('photo', new THREE.Vector3(px, py, pz), new THREE.Vector3(lx, ly, lz)); camPos.set(px, py, pz); camLook.set(lx, ly, lz); }, photoEnd: endSpecial, fx: { dove: fxDove, petals: fxPetals, halo: fxHalo, sparkle: fxSparkle }, obj: OBJ, inZone: inZone, signCross: signCross, amen: amen, daylight: function(d, az){ SKY.force = (d === null || d === undefined) ? null : d; if (az !== undefined) SKY.forceAz = az; skyUpdate(true); }, teleport: function(x, z, tx, tz){ walker = null; if (state.seated) leaveSeat(); if (CAFE.seat) cafeStand(); myAvatar.position.set(x, groundY(x, z), z); if (tx !== undefined) { faceTo(tx, tz); myAvatar.rotation.y = state.facing; } var w = desiredCamera(); camPos.copy(w.pos); camLook.copy(w.look); }, snapCam: function(){ var w = desiredCamera(); camPos.copy(w.pos); camLook.copy(w.look); }, setJoy: function(x, y){ joy.x = x; joy.y = y; joy.active = !!(x || y); }, openSheet: openSheet, closeSheets: closeSheets, seats: seats, setView: setView, state: function(){ return { mode: mode, seated: state.seated, posture: state.posture, special: state.special, pos: [myAvatar.position.x, myAvatar.position.z], walking: !!walker, view: view, near: nearObj(), candles: rackSlots.filter(function(s){ return s.used; }).length, ride: ride ? ride.kind : null, fx: FX.length }; } };
+window.__chapelDebug = { wyd: WYD, wydDays: wydDays, wydRender: wydRender, openWyd: openWyd, wydIntentOn: wydIntentOn, wydIntentSet: wydIntentSet, camp: CAMP, campLoad: campLoad, campRefresh: campRefresh, campPost: campPost, campAuto: campAuto, campOpen: campOpen, drawBoard: drawBoard, qual: QUAL, qualLevels: QUAL_LEVELS, setQuality: setQuality, qualTick: qualTick, simple: SIMPLE, simpleOn: simpleOn, simpleOff: simpleOff, setContrast: setContrast, ev: EV, logEvent: logEvent, isRunning: function(){ return running; }, renderer: renderer, shafts: SHAFTS, season: SEASON, creche: CRECHE, nowDate: nowDate, when: WHEN, feast: { today: feastToday, cands: feastCandidates, render: renderFeastUI, announce: feastAnnounce, set: feastSet }, rtPayload: rtPayload, renderCreche: renderCreche, openCreche: openCreche, seasonEnter: seasonEnter, camBlock: CAM_BLOCK, desiredCamera: desiredCamera, orbit: orbit, joy: joy, pews: PEWS, groundY: groundY, cafe: CAFE, cafeOrder: cafeOrder, cafeSit: cafeSit, eggs: EGGS, roosterCrow: roosterCrow, petCat: petCat, towerView: towerView, endTower: endTower, confessAmen: confessAmen, confLamp: function(){ return CONF_LAMP; }, nodes: NODES, zones: ZONES, avatarY: function(){ return myAvatar.position.y; }, myPose: function(){ return myAvatar.userData.pose; }, sky: SKY, skyUpdate: skyUpdate, wxSet: wxSet, wxApply: wxApply, music: MUSIC, musicPlay: musicPlay, musicPause: musicPause, saints: SAINTS_INFO, openSaint: openSaint, prayers: prayerList, openConfess: openConfess, buildAvatar: buildAvatar, setPose: setPose, me: function(){ return me; }, applyMe: applyMe, TOPS: TOPS, HATS: HATS, HAIRS: HAIRS, SIZES: SIZES, shafts: SHAFTS, dust: function(){ return DUST; }, loft: LOFT, ambList: ambList, inapp: INAPP, openExternal: openExternal, rtRestLeave: rtRestLeave, rtr: RTR, rtRestRead: rtRestRead, rtRestWrite: rtRestWrite, rtMerge: rtMerge, unmute: UNMUTE, audioResume: audioResume, audioStateText: audioStateText, amb: AMB, ambPlay: ambPlay, ambStop: ambStop, ambNext: ambNext, setHymns: setHymns, bow: bow, bows: bows, rtSeat: rtSeat, hymns: HYMNS, rtDraw: rtDraw, rtHidden: rtHidden, visits: VISITS, countVisits: countVisits, recordVisit: recordVisit, setBig: setBig, padStart: padStart, padStop: padStop, pickGreet: pickGreet, renderCandleNotes: renderCandleNotes, candleCards: candleCards, loadNotices: loadNotices, notices: function(){ return NOTICES; }, rt: RT, rtSync: rtSync, rtEmote: rtEmote, tour: TOUR, tourStart: tourStart, quizStart: quizStart, throwBall: throwBall, ball: BALL, startOrgan: startOrgan, organPlay: organPlay, liturgy: liturgy, LIT: LIT, sharePhoto: sharePhoto, snapshot: snapshot, nextMass: nextMass, billboards: billboards, realImg: REAL_IMG, scene: scene, camera: camera, THREE: THREE, interact: interact, walkTo: walkTo, goSit: goSit, peace: peace, ride: { swing: rideSwing, slide: rideSlide, end: endRide }, dogs: dogs, sister: sister, openArt: openArt, openStation: openStation, petDog: petDog, meetSister: meetSister, openAngelus: openAngelus, photo: function(px, py, pz, lx, ly, lz){ beginSpecial('photo', new THREE.Vector3(px, py, pz), new THREE.Vector3(lx, ly, lz)); camPos.set(px, py, pz); camLook.set(lx, ly, lz); }, photoEnd: endSpecial, fx: { dove: fxDove, petals: fxPetals, halo: fxHalo, sparkle: fxSparkle }, obj: OBJ, inZone: inZone, signCross: signCross, amen: amen, daylight: function(d, az){ SKY.force = (d === null || d === undefined) ? null : d; if (az !== undefined) SKY.forceAz = az; skyUpdate(true); }, teleport: function(x, z, tx, tz){ walker = null; if (state.seated) leaveSeat(); if (CAFE.seat) cafeStand(); myAvatar.position.set(x, groundY(x, z), z); if (tx !== undefined) { faceTo(tx, tz); myAvatar.rotation.y = state.facing; } var w = desiredCamera(); camPos.copy(w.pos); camLook.copy(w.look); }, snapCam: function(){ var w = desiredCamera(); camPos.copy(w.pos); camLook.copy(w.look); }, setJoy: function(x, y){ joy.x = x; joy.y = y; joy.active = !!(x || y); }, openSheet: openSheet, closeSheets: closeSheets, seats: seats, setView: setView, state: function(){ return { mode: mode, seated: state.seated, posture: state.posture, special: state.special, pos: [myAvatar.position.x, myAvatar.position.z], walking: !!walker, view: view, near: nearObj(), candles: rackSlots.filter(function(s){ return s.used; }).length, ride: ride ? ride.kind : null, fx: FX.length }; } };
 })();
 </script>
 

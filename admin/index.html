@@ -74,6 +74,7 @@ pre{white-space:pre-wrap;font-size:11.5px;background:rgba(0,0,0,.35);padding:10p
     <div class="card tab" id="tab-intent" hidden>
       <h2>기도 지향 <span class="badge">비공개</span></h2>
       <p class="muted">신자들이 보낸 지향입니다. 미사·묵주기도 때 기억해 주세요. 확인한 뒤 삭제할 수 있습니다.</p>
+      <div class="row" style="margin-bottom:8px"><label class="chk"><input type="checkbox" id="it-wyd"> WYD·청년 지향만 보기 <span class="badge" id="it-wyd-n"></span></label></div>
       <div id="it-list"></div>
     </div>
 
@@ -253,9 +254,10 @@ function loadGuest(){
 }
 function loadIntent(){
   sb.from('notes').select('id,name,body,created_at').eq('kind', 'intention').order('created_at', { ascending: false }).limit(300).then(function(r){
-    var el = $('#it-list'); el.innerHTML = ''; var rows = r.data || [];
+    var el = $('#it-list'); el.innerHTML = ''; var rows = r.data || [], isW = function(n){ return /^\s*\[WYD\]/i.test(n.body || ''); }; // (v24) 경당의 「WYD·청년을 위해」 지향은 본문 앞에 [WYD]
+    var wn = rows.filter(isW).length; $('#it-wyd-n').textContent = wn ? wn : ''; if ($('#it-wyd').checked) rows = rows.filter(isW);
     if (!rows.length) el.innerHTML = '<p class="muted">받은 지향이 없습니다.</p>';
-    rows.forEach(function(n){ var d = document.createElement('div'); d.className = 'item'; d.innerHTML = '<div class="body">' + esc(n.body) + '</div><div class="meta">' + esc(n.name || '이름 없음') + ' · ' + fmt(n.created_at) + '</div>'; var del = document.createElement('button'); del.className = 'ghost danger'; del.textContent = '확인했어요 (삭제)'; del.onclick = function(){ if (!confirm('이 지향을 목록에서 지울까요?')) return; sb.from('notes').delete().eq('id', n.id).then(function(){ loadIntent(); loadStats(); }); }; d.appendChild(del); el.appendChild(d); });
+    rows.forEach(function(n){ var d = document.createElement('div'); d.className = 'item'; d.innerHTML = '<div class="body">' + (isW(n) ? '<span class="badge p">WYD</span> ' : '') + esc(String(n.body).replace(/^\s*\[WYD\]\s*/i, '')) + '</div><div class="meta">' + esc(n.name || '이름 없음') + ' · ' + fmt(n.created_at) + '</div>'; var del = document.createElement('button'); del.className = 'ghost danger'; del.textContent = '확인했어요 (삭제)'; del.onclick = function(){ if (!confirm('이 지향을 목록에서 지울까요?')) return; sb.from('notes').delete().eq('id', n.id).then(function(){ loadIntent(); loadStats(); }); }; d.appendChild(del); el.appendChild(d); });
   });
 }
 function loadNotices(){
@@ -269,6 +271,7 @@ function loadNotices(){
       d.appendChild(row); el.appendChild(d); });
   });
 }
+$('#it-wyd').addEventListener('change', loadIntent);
 $('#nt-add').addEventListener('click', function(){
   var t = $('#nt-title').value.trim(), b = $('#nt-body').value.trim(), m = $('#nt-msg'); m.className = 'msg';
   if (!t) { m.className = 'msg err'; m.textContent = '제목을 적어주세요.'; return; }
